@@ -16,6 +16,7 @@
 		8CFE5E86A04CB20BF467C476 /* RankleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AF6B77E7645B6A10B6FD737 /* RankleApp.swift */; };
 		A5450BED5414A91B518DF607 /* ListsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D625C531854BDA27C72640E /* ListsViewModel.swift */; };
 		ADE7515F0B1DDBE179AB4CE0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23543D05405A6F7DF546A143 /* ContentView.swift */; };
+		AF426D42A4F84ACFE87A29EA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E0A5FBE58C0EE3EE2FC38E03 /* Assets.xcassets */; };
 		D003885DE1A1A831824EC00C /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858EE5D216E8A09EF1D7FFDC /* HomeView.swift */; };
 		D89BBE3ADDF015EE8452E0DB /* RankingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FE0B6482A52DB6F66CF64E /* RankingViewModel.swift */; };
 		F92FCAC6FBE1CD9916864F03 /* CreateListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1771838BF54705BC3517A3A4 /* CreateListView.swift */; };
@@ -45,6 +46,7 @@
 		BC0E5C110D595A59960DEFCB /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
 		CAAFE7E7AD4B065E483B227C /* RankingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingTests.swift; sourceTree = "<group>"; };
 		DD4F96B63329F79E04001918 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
+		E0A5FBE58C0EE3EE2FC38E03 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E4FE0B6482A52DB6F66CF64E /* RankingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingViewModel.swift; sourceTree = "<group>"; };
 		F5B13C337DD8A6826D973C0C /* ThemeButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeButtonStyle.swift; sourceTree = "<group>"; };
 		FFB56B18F6850800760508E8 /* Rankle.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Rankle.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -74,6 +76,7 @@
 			children = (
 				F8AF4437CE527C635DB0770A /* App */,
 				F6111AFBDD866BB30AB9B62A /* Models */,
+				B7617F915E9CF33CE3C84557 /* Resources */,
 				58C6FEB2F193A1D31E12F356 /* Services */,
 				4BB737573E34B6B0618789ED /* ViewModels */,
 				7FC8A84306B6054FF9429B8F /* Views */,
@@ -120,6 +123,14 @@
 			path = Rankle/Tests;
 			sourceTree = "<group>";
 		};
+		B7617F915E9CF33CE3C84557 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				E0A5FBE58C0EE3EE2FC38E03 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		E6265006F2AA387BB7C38EF8 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -154,6 +165,7 @@
 			buildConfigurationList = D2BDBE4F4C30A82FAFD70364 /* Build configuration list for PBXNativeTarget "Rankle" */;
 			buildPhases = (
 				CD5BB55E4F5583305368F5D4 /* Sources */,
+				8922A70D1FD41BA2A9E7E489 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -213,6 +225,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		8922A70D1FD41BA2A9E7E489 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AF426D42A4F84ACFE87A29EA /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		01A64E57314765261ADF3CFD /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -256,6 +279,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = Rankle/Supporting/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -427,6 +451,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = Rankle/Supporting/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;

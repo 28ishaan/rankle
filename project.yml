@@ -18,6 +18,8 @@ targets:
       PRODUCT_BUNDLE_IDENTIFIER: com.rankle.app
       PRODUCT_NAME: Rankle
       INFOPLIST_FILE: Rankle/Supporting/Info.plist
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
     dependencies: []
   RankleTests:
     type: bundle.unit-test
