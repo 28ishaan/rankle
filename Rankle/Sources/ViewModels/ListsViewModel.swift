@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 final class ListsViewModel: ObservableObject {
     @Published private(set) var lists: [RankleList] = []
@@ -11,10 +12,11 @@ final class ListsViewModel: ObservableObject {
         self.lists = storage.loadLists()
     }
 
-    func createList(name: String, items: [String]) {
+    func createList(name: String, items: [String], color: Color = .cyan) {
         let rankleItems = items.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
             .map { RankleItem(title: $0) }
-        let newList = RankleList(name: name, items: rankleItems)
+        var newList = RankleList(name: name, items: rankleItems)
+        newList.color = color
         lists.append(newList)
         persist()
     }
@@ -27,6 +29,12 @@ final class ListsViewModel: ObservableObject {
     func renameList(_ listId: UUID, newName: String) {
         guard let index = lists.firstIndex(where: { $0.id == listId }) else { return }
         lists[index].name = newName
+        persist()
+    }
+
+    func updateColor(_ color: Color, for listId: UUID) {
+        guard let index = lists.firstIndex(where: { $0.id == listId }) else { return }
+        lists[index].color = color
         persist()
     }
 

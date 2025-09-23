@@ -10,6 +10,7 @@
 		1C908EDA095AC8BC2A753039 /* RankingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAAFE7E7AD4B065E483B227C /* RankingTests.swift */; };
 		2421BFD15A6953C997B8A1B2 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0E5C110D595A59960DEFCB /* StorageService.swift */; };
 		52A2E0747DD45278F26FCA38 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4F96B63329F79E04001918 /* SplashView.swift */; };
+		6DA3DC206562D4B52A70CFF6 /* ThemeButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5B13C337DD8A6826D973C0C /* ThemeButtonStyle.swift */; };
 		74DA319F71133E610E8FAAAB /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67023980B01FEEF790AC7379 /* Models.swift */; };
 		7B444C0D157147CA8650AE65 /* RankingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123C1C7EB61FEC90D005CCDA /* RankingView.swift */; };
 		8CFE5E86A04CB20BF467C476 /* RankleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AF6B77E7645B6A10B6FD737 /* RankleApp.swift */; };
@@ -45,6 +46,7 @@
 		CAAFE7E7AD4B065E483B227C /* RankingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingTests.swift; sourceTree = "<group>"; };
 		DD4F96B63329F79E04001918 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		E4FE0B6482A52DB6F66CF64E /* RankingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingViewModel.swift; sourceTree = "<group>"; };
+		F5B13C337DD8A6826D973C0C /* ThemeButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeButtonStyle.swift; sourceTree = "<group>"; };
 		FFB56B18F6850800760508E8 /* Rankle.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Rankle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -88,6 +90,14 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
+		7E53DBE3EC0FE9838BF3B12B /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				F5B13C337DD8A6826D973C0C /* ThemeButtonStyle.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		7FC8A84306B6054FF9429B8F /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -96,6 +106,7 @@
 				74FB52386BB78219E708173C /* ListDetailView.swift */,
 				123C1C7EB61FEC90D005CCDA /* RankingView.swift */,
 				DD4F96B63329F79E04001918 /* SplashView.swift */,
+				7E53DBE3EC0FE9838BF3B12B /* Components */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -226,6 +237,7 @@
 				8CFE5E86A04CB20BF467C476 /* RankleApp.swift in Sources */,
 				52A2E0747DD45278F26FCA38 /* SplashView.swift in Sources */,
 				2421BFD15A6953C997B8A1B2 /* StorageService.swift in Sources */,
+				6DA3DC206562D4B52A70CFF6 /* ThemeButtonStyle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

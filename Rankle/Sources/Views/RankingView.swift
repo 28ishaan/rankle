@@ -19,14 +19,16 @@ struct RankingView: View {
                     .foregroundStyle(.green)
                 Text("Ranking Complete")
                     .font(.title2)
+                    .foregroundStyle(.white)
                 Button("Done") {
                     onComplete(viewModel.list)
                     dismiss()
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(ThemeButtonStyle())
             } else if let matchup = viewModel.currentMatchup {
                 Text("Which do you prefer?")
                     .font(.headline)
+                    .foregroundStyle(.white)
                 HStack(spacing: 16) {
                     ChoiceCard(title: matchup.left.title) {
                         viewModel.choose(.left)

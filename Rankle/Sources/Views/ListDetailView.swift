@@ -9,6 +9,17 @@ struct ListDetailView: View {
 
     var body: some View {
         List {
+            Section("Appearance") {
+                HStack(spacing: 12) {
+                    Circle()
+                        .fill(list.color)
+                        .frame(width: 24, height: 24)
+                    ColorPicker("Icon Color", selection: Binding(get: { list.color }, set: { newColor in
+                        list.color = newColor
+                        onUpdate(list)
+                    }), supportsOpacity: false)
+                }
+            }
             Section {
                 HStack {
                     TextField("Add new item", text: $newItemTitle)
@@ -19,7 +30,7 @@ struct ListDetailView: View {
                         newItemTitle = ""
                         onUpdate(list)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(ThemeButtonStyle())
                 }
             }
             Section("Ranked Items") {

@@ -5,14 +5,18 @@ struct CreateListView: View {
 
     @State private var name: String = ""
     @State private var itemsText: String = ""
+    @State private var selectedColor: Color = .cyan
 
-    var onCreate: (String, [String]) -> Void
+    var onCreate: (String, [String], Color) -> Void
 
     var body: some View {
         NavigationStack {
             Form {
                 Section("List Name") {
                     TextField("e.g., Favorite Movies", text: $name)
+                }
+                Section("Icon Color") {
+                    ColorPicker("Color", selection: $selectedColor, supportsOpacity: false)
                 }
                 Section("Items (one per line)") {
                     TextEditor(text: $itemsText)
@@ -28,7 +32,7 @@ struct CreateListView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Create") {
                         let items = itemsText.split(separator: "\n").map { String($0) }
-                        onCreate(name, items)
+                        onCreate(name, items, selectedColor)
                         dismiss()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -39,5 +43,5 @@ struct CreateListView: View {
 }
 
 #Preview {
-    CreateListView { _, _ in }
+    CreateListView { _, _, _ in }
 }

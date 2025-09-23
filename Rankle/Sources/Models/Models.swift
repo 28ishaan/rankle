@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 struct RankleItem: Identifiable, Codable, Hashable {
     let id: UUID
@@ -14,12 +15,45 @@ struct RankleList: Identifiable, Codable {
     let id: UUID
     var name: String
     var items: [RankleItem]
+    var colorRGBA: RGBAColor
 
-    init(id: UUID = UUID(), name: String, items: [RankleItem] = []) {
+    init(id: UUID = UUID(), name: String, items: [RankleItem] = [], color: Color = .cyan) {
         self.id = id
         self.name = name
         self.items = items
+        self.colorRGBA = RGBAColor(color: color)
     }
+
+    var color: Color {
+        get { colorRGBA.color }
+        set { colorRGBA = RGBAColor(color: newValue) }
+    }
+}
+
+struct RGBAColor: Codable, Hashable {
+    var r: Double
+    var g: Double
+    var b: Double
+    var a: Double
+
+    init(r: Double, g: Double, b: Double, a: Double = 1.0) {
+        self.r = r
+        self.g = g
+        self.b = b
+        self.a = a
+    }
+
+    init(color: Color) {
+        let ui = UIColor(color)
+        var rr: CGFloat = 0, gg: CGFloat = 0, bb: CGFloat = 0, aa: CGFloat = 0
+        ui.getRed(&rr, green: &gg, blue: &bb, alpha: &aa)
+        self.r = Double(rr)
+        self.g = Double(gg)
+        self.b = Double(bb)
+        self.a = Double(aa)
+    }
+
+    var color: Color { Color(red: r, green: g, blue: b).opacity(a) }
 }
 
 struct Matchup: Codable, Hashable {

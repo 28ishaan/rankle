@@ -7,27 +7,44 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(viewModel.lists) { list in
-                    NavigationLink(destination: ListDetailView(list: list, onUpdate: { updated in
-                        viewModel.replaceList(updated)
-                    })) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(list.name)
-                                .font(.headline)
-                            if !list.items.isEmpty {
-                                Text(list.items.prefix(3).map { $0.title }.joined(separator: ", "))
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            } else {
-                                Text("No items yet")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
+            ZStack {
+                Color(red: 7/255, green: 16/255, blue: 39/255)
+                    .ignoresSafeArea()
+                if viewModel.lists.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "list.bullet")
+                            .font(.system(size: 48, weight: .semibold, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.7))
+                        Text("No lists yet")
+                            .font(.system(.headline, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.8))
+                        Text("Tap + to create your first list")
+                            .font(.system(.subheadline, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.6))
                     }
+                    .padding()
+                } else {
+                    List {
+                        ForEach(viewModel.lists) { list in
+                            NavigationLink(destination: ListDetailView(list: list, onUpdate: { updated in
+                                viewModel.replaceList(updated)
+                            })) {
+                                HStack(spacing: 12) {
+                                    Circle()
+                                        .fill(list.color)
+                                        .frame(width: 28, height: 28)
+                                    Text(list.name)
+                                        .font(.system(.headline, design: .rounded))
+                                        .foregroundStyle(.white)
+                                }
+                                .padding(.vertical, 6)
+                            }
+                            .listRowBackground(Color.clear)
+                        }
+                        .onDelete(perform: viewModel.deleteList)
+                    }
+                    .scrollContentBackground(.hidden)
                 }
-                .onDelete(perform: viewModel.deleteList)
             }
             .navigationTitle("My Lists")
             .toolbar {
@@ -36,12 +53,13 @@ struct HomeView: View {
                         isPresentingCreate = true
                     } label: {
                         Image(systemName: "plus")
+                            .foregroundStyle(.white)
                     }
                 }
             }
             .sheet(isPresented: $isPresentingCreate) {
-                CreateListView { name, items in
-                    viewModel.createList(name: name, items: items)
+                CreateListView { name, items, color in
+                    viewModel.createList(name: name, items: items, color: color)
                 }
             }
         }
