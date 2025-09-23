@@ -39,10 +39,17 @@ struct ListDetailView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(Array(list.items.enumerated()), id: \.element.id) { index, item in
-                        HStack {
-                            Text("\(index + 1).")
-                                .foregroundStyle(.secondary)
-                            Text(item.title)
+                        NavigationLink(destination: ItemDetailView(listId: list.id, item: item, onUpdate: { updatedItem in
+                            if let idx = list.items.firstIndex(where: { $0.id == updatedItem.id }) {
+                                list.items[idx] = updatedItem
+                                onUpdate(list)
+                            }
+                        })) {
+                            HStack {
+                                Text("\(index + 1).")
+                                    .foregroundStyle(.secondary)
+                                Text(item.title)
+                            }
                         }
                     }
                     .onDelete { offsets in

@@ -1,13 +1,28 @@
 import Foundation
 import SwiftUI
 
+struct MediaItem: Identifiable, Codable, Hashable {
+    enum MediaType: String, Codable { case image, video }
+    let id: UUID
+    var type: MediaType
+    var filename: String
+
+    init(id: UUID = UUID(), type: MediaType, filename: String) {
+        self.id = id
+        self.type = type
+        self.filename = filename
+    }
+}
+
 struct RankleItem: Identifiable, Codable, Hashable {
     let id: UUID
     var title: String
+    var media: [MediaItem]
 
-    init(id: UUID = UUID(), title: String) {
+    init(id: UUID = UUID(), title: String, media: [MediaItem] = []) {
         self.id = id
         self.title = title
+        self.media = media
     }
 }
 

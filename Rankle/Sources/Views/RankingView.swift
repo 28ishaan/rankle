@@ -30,10 +30,10 @@ struct RankingView: View {
                     .font(.headline)
                     .foregroundStyle(.white)
                 HStack(spacing: 16) {
-                    ChoiceCard(title: matchup.left.title) {
+                    ChoiceCard(item: matchup.left) {
                         viewModel.choose(.left)
                     }
-                    ChoiceCard(title: matchup.right.title) {
+                    ChoiceCard(item: matchup.right) {
                         viewModel.choose(.right)
                     }
                 }
@@ -49,16 +49,20 @@ struct RankingView: View {
 }
 
 private struct ChoiceCard: View {
-    let title: String
+    let item: RankleItem
     var action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack {
-                Text(title)
+            VStack(spacing: 12) {
+                if !item.media.isEmpty {
+                    MediaCarouselView(media: item.media)
+                        .frame(height: 200)
+                }
+                Text(item.title)
                     .font(.title3)
                     .multilineTextAlignment(.center)
-                    .padding()
+                    .padding(.horizontal)
             }
             .frame(maxWidth: .infinity)
             .padding()
