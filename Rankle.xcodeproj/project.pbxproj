@@ -1,0 +1,465 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1C908EDA095AC8BC2A753039 /* RankingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAAFE7E7AD4B065E483B227C /* RankingTests.swift */; };
+		2421BFD15A6953C997B8A1B2 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0E5C110D595A59960DEFCB /* StorageService.swift */; };
+		52A2E0747DD45278F26FCA38 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4F96B63329F79E04001918 /* SplashView.swift */; };
+		74DA319F71133E610E8FAAAB /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67023980B01FEEF790AC7379 /* Models.swift */; };
+		7B444C0D157147CA8650AE65 /* RankingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123C1C7EB61FEC90D005CCDA /* RankingView.swift */; };
+		8CFE5E86A04CB20BF467C476 /* RankleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AF6B77E7645B6A10B6FD737 /* RankleApp.swift */; };
+		A5450BED5414A91B518DF607 /* ListsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D625C531854BDA27C72640E /* ListsViewModel.swift */; };
+		ADE7515F0B1DDBE179AB4CE0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23543D05405A6F7DF546A143 /* ContentView.swift */; };
+		D003885DE1A1A831824EC00C /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858EE5D216E8A09EF1D7FFDC /* HomeView.swift */; };
+		D89BBE3ADDF015EE8452E0DB /* RankingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FE0B6482A52DB6F66CF64E /* RankingViewModel.swift */; };
+		F92FCAC6FBE1CD9916864F03 /* CreateListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1771838BF54705BC3517A3A4 /* CreateListView.swift */; };
+		F9A7E79A83C6B2F78F1CBE5A /* ListDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74FB52386BB78219E708173C /* ListDetailView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F17D78D7A4CD7610F28F3EA4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0EDE685FA646EB68D2957C01 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 14F37D4963EA44441B3107DA;
+			remoteInfo = Rankle;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		123C1C7EB61FEC90D005CCDA /* RankingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingView.swift; sourceTree = "<group>"; };
+		1771838BF54705BC3517A3A4 /* CreateListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateListView.swift; sourceTree = "<group>"; };
+		23543D05405A6F7DF546A143 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		2E3227C5D5A375A65DDB784A /* RankleTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = RankleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3AF6B77E7645B6A10B6FD737 /* RankleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankleApp.swift; sourceTree = "<group>"; };
+		67023980B01FEEF790AC7379 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		74FB52386BB78219E708173C /* ListDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailView.swift; sourceTree = "<group>"; };
+		858EE5D216E8A09EF1D7FFDC /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		8D625C531854BDA27C72640E /* ListsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsViewModel.swift; sourceTree = "<group>"; };
+		BC0E5C110D595A59960DEFCB /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
+		CAAFE7E7AD4B065E483B227C /* RankingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingTests.swift; sourceTree = "<group>"; };
+		DD4F96B63329F79E04001918 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
+		E4FE0B6482A52DB6F66CF64E /* RankingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingViewModel.swift; sourceTree = "<group>"; };
+		FFB56B18F6850800760508E8 /* Rankle.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Rankle.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		10B0ED737A91A3EB14AEA54C = {
+			isa = PBXGroup;
+			children = (
+				4D5FC6BC2289331B4E7C9C29 /* Sources */,
+				906C56DC6CAC71E0D1D2E0A1 /* Tests */,
+				E6265006F2AA387BB7C38EF8 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4BB737573E34B6B0618789ED /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				8D625C531854BDA27C72640E /* ListsViewModel.swift */,
+				E4FE0B6482A52DB6F66CF64E /* RankingViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		4D5FC6BC2289331B4E7C9C29 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				F8AF4437CE527C635DB0770A /* App */,
+				F6111AFBDD866BB30AB9B62A /* Models */,
+				58C6FEB2F193A1D31E12F356 /* Services */,
+				4BB737573E34B6B0618789ED /* ViewModels */,
+				7FC8A84306B6054FF9429B8F /* Views */,
+			);
+			name = Sources;
+			path = Rankle/Sources;
+			sourceTree = "<group>";
+		};
+		58C6FEB2F193A1D31E12F356 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				BC0E5C110D595A59960DEFCB /* StorageService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		7FC8A84306B6054FF9429B8F /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				1771838BF54705BC3517A3A4 /* CreateListView.swift */,
+				858EE5D216E8A09EF1D7FFDC /* HomeView.swift */,
+				74FB52386BB78219E708173C /* ListDetailView.swift */,
+				123C1C7EB61FEC90D005CCDA /* RankingView.swift */,
+				DD4F96B63329F79E04001918 /* SplashView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		906C56DC6CAC71E0D1D2E0A1 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				CAAFE7E7AD4B065E483B227C /* RankingTests.swift */,
+			);
+			name = Tests;
+			path = Rankle/Tests;
+			sourceTree = "<group>";
+		};
+		E6265006F2AA387BB7C38EF8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FFB56B18F6850800760508E8 /* Rankle.app */,
+				2E3227C5D5A375A65DDB784A /* RankleTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F6111AFBDD866BB30AB9B62A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				67023980B01FEEF790AC7379 /* Models.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		F8AF4437CE527C635DB0770A /* App */ = {
+			isa = PBXGroup;
+			children = (
+				23543D05405A6F7DF546A143 /* ContentView.swift */,
+				3AF6B77E7645B6A10B6FD737 /* RankleApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		14F37D4963EA44441B3107DA /* Rankle */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D2BDBE4F4C30A82FAFD70364 /* Build configuration list for PBXNativeTarget "Rankle" */;
+			buildPhases = (
+				CD5BB55E4F5583305368F5D4 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Rankle;
+			packageProductDependencies = (
+			);
+			productName = Rankle;
+			productReference = FFB56B18F6850800760508E8 /* Rankle.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E140E6053997D9995EEDE2E6 /* RankleTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A322EA4CAFE941BD9562BB4B /* Build configuration list for PBXNativeTarget "RankleTests" */;
+			buildPhases = (
+				01A64E57314765261ADF3CFD /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C23B373D6CE7DA6387B76792 /* PBXTargetDependency */,
+			);
+			name = RankleTests;
+			packageProductDependencies = (
+			);
+			productName = RankleTests;
+			productReference = 2E3227C5D5A375A65DDB784A /* RankleTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0EDE685FA646EB68D2957C01 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+			};
+			buildConfigurationList = F4FCF2A51195EB3A4831C024 /* Build configuration list for PBXProject "Rankle" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 10B0ED737A91A3EB14AEA54C;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				14F37D4963EA44441B3107DA /* Rankle */,
+				E140E6053997D9995EEDE2E6 /* RankleTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		01A64E57314765261ADF3CFD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1C908EDA095AC8BC2A753039 /* RankingTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CD5BB55E4F5583305368F5D4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ADE7515F0B1DDBE179AB4CE0 /* ContentView.swift in Sources */,
+				F92FCAC6FBE1CD9916864F03 /* CreateListView.swift in Sources */,
+				D003885DE1A1A831824EC00C /* HomeView.swift in Sources */,
+				F9A7E79A83C6B2F78F1CBE5A /* ListDetailView.swift in Sources */,
+				A5450BED5414A91B518DF607 /* ListsViewModel.swift in Sources */,
+				74DA319F71133E610E8FAAAB /* Models.swift in Sources */,
+				7B444C0D157147CA8650AE65 /* RankingView.swift in Sources */,
+				D89BBE3ADDF015EE8452E0DB /* RankingViewModel.swift in Sources */,
+				8CFE5E86A04CB20BF467C476 /* RankleApp.swift in Sources */,
+				52A2E0747DD45278F26FCA38 /* SplashView.swift in Sources */,
+				2421BFD15A6953C997B8A1B2 /* StorageService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C23B373D6CE7DA6387B76792 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 14F37D4963EA44441B3107DA /* Rankle */;
+			targetProxy = F17D78D7A4CD7610F28F3EA4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		46F384245D1594AA6312391C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Rankle/Supporting/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.rankle.app;
+				PRODUCT_NAME = Rankle;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		84069D8B67FED41BA31130A4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		9392E99340FFD2A265B9090A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.rankle.app.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Rankle.app/Rankle";
+			};
+			name = Release;
+		};
+		94B7BF71E1E5A1E598DFA329 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.rankle.app.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Rankle.app/Rankle";
+			};
+			name = Debug;
+		};
+		B56EF586B1AB082AD16CBD82 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		DD0A1A651F1266EA53965B55 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Rankle/Supporting/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.rankle.app;
+				PRODUCT_NAME = Rankle;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A322EA4CAFE941BD9562BB4B /* Build configuration list for PBXNativeTarget "RankleTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				94B7BF71E1E5A1E598DFA329 /* Debug */,
+				9392E99340FFD2A265B9090A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D2BDBE4F4C30A82FAFD70364 /* Build configuration list for PBXNativeTarget "Rankle" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				46F384245D1594AA6312391C /* Debug */,
+				DD0A1A651F1266EA53965B55 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F4FCF2A51195EB3A4831C024 /* Build configuration list for PBXProject "Rankle" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B56EF586B1AB082AD16CBD82 /* Debug */,
+				84069D8B67FED41BA31130A4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0EDE685FA646EB68D2957C01 /* Project object */;
+}

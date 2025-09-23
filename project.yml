@@ -1,0 +1,43 @@
+name: Rankle
+options:
+  minimumXcodeGenVersion: 2.38.0
+  deploymentTarget:
+    iOS: 16.0
+settings:
+  base:
+    SWIFT_VERSION: 5.9
+packages: {}
+targets:
+  Rankle:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: Rankle/Sources
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.rankle.app
+      PRODUCT_NAME: Rankle
+      INFOPLIST_FILE: Rankle/Supporting/Info.plist
+    dependencies: []
+  RankleTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: Rankle/Tests
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.rankle.app.tests
+    dependencies:
+      - target: Rankle
+schemes:
+  Rankle:
+    build:
+      targets:
+        Rankle: all
+    test:
+      targets:
+        - name: RankleTests
+          parallelizable: true
+          randomExecutionOrder: true
+    run:
+      config: Debug
