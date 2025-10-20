@@ -13,8 +13,10 @@
 		52A2E0747DD45278F26FCA38 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4F96B63329F79E04001918 /* SplashView.swift */; };
 		6DA3DC206562D4B52A70CFF6 /* ThemeButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5B13C337DD8A6826D973C0C /* ThemeButtonStyle.swift */; };
 		74DA319F71133E610E8FAAAB /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67023980B01FEEF790AC7379 /* Models.swift */; };
+		763D5FB6273852A6E7B4B838 /* AddItemRankingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7348D15F54E5F5C35A06BAE /* AddItemRankingView.swift */; };
 		7B444C0D157147CA8650AE65 /* RankingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123C1C7EB61FEC90D005CCDA /* RankingView.swift */; };
 		8CFE5E86A04CB20BF467C476 /* RankleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AF6B77E7645B6A10B6FD737 /* RankleApp.swift */; };
+		9E4CC0AF089D78C38BA88261 /* AddItemRankingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ED891A3479A4B196279B457 /* AddItemRankingViewModel.swift */; };
 		A0386CD51777E92E7F0B6C67 /* MediaCarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 592DE0B77CB869BD0EB056D4 /* MediaCarouselView.swift */; };
 		A5450BED5414A91B518DF607 /* ListsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D625C531854BDA27C72640E /* ListsViewModel.swift */; };
 		ADE7515F0B1DDBE179AB4CE0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23543D05405A6F7DF546A143 /* ContentView.swift */; };
@@ -45,8 +47,10 @@
 		592DE0B77CB869BD0EB056D4 /* MediaCarouselView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCarouselView.swift; sourceTree = "<group>"; };
 		67023980B01FEEF790AC7379 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		74FB52386BB78219E708173C /* ListDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailView.swift; sourceTree = "<group>"; };
+		7ED891A3479A4B196279B457 /* AddItemRankingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddItemRankingViewModel.swift; sourceTree = "<group>"; };
 		858EE5D216E8A09EF1D7FFDC /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		8D625C531854BDA27C72640E /* ListsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsViewModel.swift; sourceTree = "<group>"; };
+		B7348D15F54E5F5C35A06BAE /* AddItemRankingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddItemRankingView.swift; sourceTree = "<group>"; };
 		BC0E5C110D595A59960DEFCB /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
 		CAAFE7E7AD4B065E483B227C /* RankingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingTests.swift; sourceTree = "<group>"; };
 		DD4F96B63329F79E04001918 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
@@ -69,6 +73,7 @@
 		4BB737573E34B6B0618789ED /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				7ED891A3479A4B196279B457 /* AddItemRankingViewModel.swift */,
 				8D625C531854BDA27C72640E /* ListsViewModel.swift */,
 				E4FE0B6482A52DB6F66CF64E /* RankingViewModel.swift */,
 			);
@@ -109,6 +114,7 @@
 		7FC8A84306B6054FF9429B8F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B7348D15F54E5F5C35A06BAE /* AddItemRankingView.swift */,
 				1771838BF54705BC3517A3A4 /* CreateListView.swift */,
 				858EE5D216E8A09EF1D7FFDC /* HomeView.swift */,
 				420F7CC9914AE1E8BB03E6D2 /* ItemDetailView.swift */,
@@ -255,6 +261,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				763D5FB6273852A6E7B4B838 /* AddItemRankingView.swift in Sources */,
+				9E4CC0AF089D78C38BA88261 /* AddItemRankingViewModel.swift in Sources */,
 				ADE7515F0B1DDBE179AB4CE0 /* ContentView.swift in Sources */,
 				F92FCAC6FBE1CD9916864F03 /* CreateListView.swift in Sources */,
 				D003885DE1A1A831824EC00C /* HomeView.swift in Sources */,

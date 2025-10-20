@@ -6,6 +6,7 @@ struct ListDetailView: View {
 
     @State private var newItemTitle: String = ""
     @State private var isPresentingRanker = false
+    @State private var isPresentingAddRanker = false
 
     var body: some View {
         List {
@@ -20,17 +21,16 @@ struct ListDetailView: View {
                     }), supportsOpacity: false)
                 }
             }
-            Section {
+            Section("Add Items (comma-separated)") {
                 HStack {
-                    TextField("Add new item", text: $newItemTitle)
-                    Button("Add") {
-                        let title = newItemTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-                        guard !title.isEmpty else { return }
-                        list.items.append(RankleItem(title: title))
-                        newItemTitle = ""
-                        onUpdate(list)
+                    TextField("e.g., Item A, Item B, Item C", text: $newItemTitle)
+                    Button("Add & Rank") {
+                        let titles = newItemTitle.split(separator: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+                        guard !titles.isEmpty else { return }
+                        isPresentingAddRanker = true
                     }
                     .buttonStyle(ThemeButtonStyle())
+                    .disabled(newItemTitle.split(separator: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }.isEmpty)
                 }
             }
             Section("Ranked Items") {
@@ -61,6 +61,9 @@ struct ListDetailView: View {
         }
         .navigationTitle(list.name)
         .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                EditButton()
+            }
             ToolbarItem(placement: .primaryAction) {
                 Button("Rank Items") { isPresentingRanker = true }
             }
@@ -69,6 +72,15 @@ struct ListDetailView: View {
             RankingView(list: list) { updated in
                 self.list = updated
                 onUpdate(updated)
+            }
+        }
+        .sheet(isPresented: $isPresentingAddRanker) {
+            let titles = newItemTitle.split(separator: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+            let newItems = titles.map { RankleItem(title: $0) }
+            AddItemRankingView(existingItems: list.items, newItems: newItems) { updatedItems in
+                list.items = updatedItems
+                newItemTitle = ""
+                onUpdate(list)
             }
         }
     }
