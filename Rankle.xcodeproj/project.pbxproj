@@ -10,6 +10,7 @@
 		1C908EDA095AC8BC2A753039 /* RankingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAAFE7E7AD4B065E483B227C /* RankingTests.swift */; };
 		2421BFD15A6953C997B8A1B2 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0E5C110D595A59960DEFCB /* StorageService.swift */; };
 		3506D6DE2CF8F6528EFFC787 /* ItemDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420F7CC9914AE1E8BB03E6D2 /* ItemDetailView.swift */; };
+		42235ADDDC1B429C32096070 /* SharingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF7596B279EC6FF66F309C8 /* SharingTests.swift */; };
 		52A2E0747DD45278F26FCA38 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4F96B63329F79E04001918 /* SplashView.swift */; };
 		6DA3DC206562D4B52A70CFF6 /* ThemeButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5B13C337DD8A6826D973C0C /* ThemeButtonStyle.swift */; };
 		74DA319F71133E610E8FAAAB /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67023980B01FEEF790AC7379 /* Models.swift */; };
@@ -55,6 +56,7 @@
 		B7348D15F54E5F5C35A06BAE /* AddItemRankingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddItemRankingView.swift; sourceTree = "<group>"; };
 		BC0E5C110D595A59960DEFCB /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
 		CAAFE7E7AD4B065E483B227C /* RankingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingTests.swift; sourceTree = "<group>"; };
+		DCF7596B279EC6FF66F309C8 /* SharingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharingTests.swift; sourceTree = "<group>"; };
 		DD4F96B63329F79E04001918 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		E0A5FBE58C0EE3EE2FC38E03 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E4FE0B6482A52DB6F66CF64E /* RankingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingViewModel.swift; sourceTree = "<group>"; };
@@ -133,6 +135,7 @@
 			isa = PBXGroup;
 			children = (
 				CAAFE7E7AD4B065E483B227C /* RankingTests.swift */,
+				DCF7596B279EC6FF66F309C8 /* SharingTests.swift */,
 			);
 			name = Tests;
 			path = Rankle/Tests;
@@ -257,6 +260,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1C908EDA095AC8BC2A753039 /* RankingTests.swift in Sources */,
+				42235ADDDC1B429C32096070 /* SharingTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -374,6 +378,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -391,6 +396,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
