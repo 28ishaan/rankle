@@ -11,7 +11,9 @@ let sizes: [(String, Int)] = [
   ("Icon-1024.png", 1024)
 ]
 
-let navy = NSColor(calibratedRed: 7/255.0, green: 16/255.0, blue: 39/255.0, alpha: 1)
+// Sunset gradient colors
+let sunsetTop = NSColor(calibratedRed: 255/255.0, green: 183/255.0, blue: 147/255.0, alpha: 1)
+let sunsetBottom = NSColor(calibratedRed: 255/255.0, green: 218/255.0, blue: 185/255.0, alpha: 1)
 let outputDir = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
   .appendingPathComponent("Rankle/Sources/Resources/Assets.xcassets/AppIcon.appiconset", isDirectory: true)
 
@@ -30,8 +32,14 @@ func drawIcon(size px: Int) -> Data {
     fatalError("Failed to create CGContext")
   }
 
-  context.setFillColor(navy.cgColor)
-  context.fill(CGRect(x: 0, y: 0, width: px, height: px))
+  // Draw sunset gradient background
+  let gradient = CGGradient(colorsSpace: colorSpace,
+                           colors: [sunsetTop.cgColor, sunsetBottom.cgColor] as CFArray,
+                           locations: [0.0, 1.0])!
+  context.drawLinearGradient(gradient,
+                            start: CGPoint(x: 0, y: 0),
+                            end: CGPoint(x: 0, y: CGFloat(px)),
+                            options: [])
 
   // Draw centered 'R' using CoreText
   let fontSize = CGFloat(px) * 0.6

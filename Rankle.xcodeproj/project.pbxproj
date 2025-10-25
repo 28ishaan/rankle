@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		147FF0A217582EE2C800BC59 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F781A4029B56EBA1D2F4ABA4 /* ThemeManager.swift */; };
 		1C908EDA095AC8BC2A753039 /* RankingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAAFE7E7AD4B065E483B227C /* RankingTests.swift */; };
 		2421BFD15A6953C997B8A1B2 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0E5C110D595A59960DEFCB /* StorageService.swift */; };
 		3506D6DE2CF8F6528EFFC787 /* ItemDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420F7CC9914AE1E8BB03E6D2 /* ItemDetailView.swift */; };
@@ -17,6 +18,7 @@
 		763D5FB6273852A6E7B4B838 /* AddItemRankingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7348D15F54E5F5C35A06BAE /* AddItemRankingView.swift */; };
 		7B444C0D157147CA8650AE65 /* RankingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123C1C7EB61FEC90D005CCDA /* RankingView.swift */; };
 		8CFE5E86A04CB20BF467C476 /* RankleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AF6B77E7645B6A10B6FD737 /* RankleApp.swift */; };
+		9C8B6DFF156BBF0C1DAB40CF /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA75A879420FD1B65F1F6008 /* Colors.swift */; };
 		9E4CC0AF089D78C38BA88261 /* AddItemRankingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ED891A3479A4B196279B457 /* AddItemRankingViewModel.swift */; };
 		A0386CD51777E92E7F0B6C67 /* MediaCarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 592DE0B77CB869BD0EB056D4 /* MediaCarouselView.swift */; };
 		A5450BED5414A91B518DF607 /* ListsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D625C531854BDA27C72640E /* ListsViewModel.swift */; };
@@ -61,6 +63,8 @@
 		E0A5FBE58C0EE3EE2FC38E03 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E4FE0B6482A52DB6F66CF64E /* RankingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingViewModel.swift; sourceTree = "<group>"; };
 		F5B13C337DD8A6826D973C0C /* ThemeButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeButtonStyle.swift; sourceTree = "<group>"; };
+		F781A4029B56EBA1D2F4ABA4 /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
+		FA75A879420FD1B65F1F6008 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		FFB56B18F6850800760508E8 /* Rankle.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Rankle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -91,6 +95,7 @@
 				F6111AFBDD866BB30AB9B62A /* Models */,
 				B7617F915E9CF33CE3C84557 /* Resources */,
 				58C6FEB2F193A1D31E12F356 /* Services */,
+				B4D77820F0F07450E9C30CB4 /* Theme */,
 				4BB737573E34B6B0618789ED /* ViewModels */,
 				7FC8A84306B6054FF9429B8F /* Views */,
 			);
@@ -103,6 +108,7 @@
 			children = (
 				97C2213E6F41183045FC34C5 /* SharingService.swift */,
 				BC0E5C110D595A59960DEFCB /* StorageService.swift */,
+				F781A4029B56EBA1D2F4ABA4 /* ThemeManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -139,6 +145,14 @@
 			);
 			name = Tests;
 			path = Rankle/Tests;
+			sourceTree = "<group>";
+		};
+		B4D77820F0F07450E9C30CB4 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				FA75A879420FD1B65F1F6008 /* Colors.swift */,
+			);
+			path = Theme;
 			sourceTree = "<group>";
 		};
 		B7617F915E9CF33CE3C84557 /* Resources */ = {
@@ -270,6 +284,7 @@
 			files = (
 				763D5FB6273852A6E7B4B838 /* AddItemRankingView.swift in Sources */,
 				9E4CC0AF089D78C38BA88261 /* AddItemRankingViewModel.swift in Sources */,
+				9C8B6DFF156BBF0C1DAB40CF /* Colors.swift in Sources */,
 				ADE7515F0B1DDBE179AB4CE0 /* ContentView.swift in Sources */,
 				F92FCAC6FBE1CD9916864F03 /* CreateListView.swift in Sources */,
 				D003885DE1A1A831824EC00C /* HomeView.swift in Sources */,
@@ -285,6 +300,7 @@
 				52A2E0747DD45278F26FCA38 /* SplashView.swift in Sources */,
 				2421BFD15A6953C997B8A1B2 /* StorageService.swift in Sources */,
 				6DA3DC206562D4B52A70CFF6 /* ThemeButtonStyle.swift in Sources */,
+				147FF0A217582EE2C800BC59 /* ThemeManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

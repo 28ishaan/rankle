@@ -1,16 +1,24 @@
 import SwiftUI
 
 struct ThemeButtonStyle: ButtonStyle {
+    @Environment(\.colorScheme) var colorScheme
+    
     func makeBody(configuration: Configuration) -> some View {
+        let primaryColor = Color.themePrimary(colorScheme)
+        let gradientColors = colorScheme == .dark 
+            ? [Color.nightYellow, Color.nightYellow.opacity(0.8)]
+            : [Color.sunsetOrange, Color.sunsetPink]
+        
         configuration.label
-            .font(.system(.headline, design: .rounded))
+            .font(.custom("Avenir Next", size: 16))
+            .fontWeight(.semibold)
             .foregroundColor(.white)
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(LinearGradient(
-                        colors: [Color.cyan, Color.blue],
+                        colors: gradientColors,
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ))
@@ -18,9 +26,9 @@ struct ThemeButtonStyle: ButtonStyle {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                    .stroke(primaryColor.opacity(0.3), lineWidth: 1)
             )
-            .shadow(color: .black.opacity(0.3), radius: 6, x: 0, y: 3)
+            .shadow(color: primaryColor.opacity(0.3), radius: 6, x: 0, y: 3)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
     }
 }

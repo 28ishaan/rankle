@@ -3,13 +3,26 @@ import SwiftUI
 struct SplashView: View {
     var body: some View {
         ZStack {
-            LinearGradient(colors: [.blue.opacity(0.15), .purple.opacity(0.15)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
-            VStack(spacing: 12) {
+            LinearGradient(
+                colors: [.sunsetGradientTop, .sunsetGradientBottom],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            VStack(spacing: 16) {
+                Text("R")
+                    .font(.custom("Avenir Next", size: 72))
+                    .fontWeight(.heavy)
+                    .foregroundColor(.sunsetOrange)
+                    .padding(24)
+                    .background(Circle().fill(.white))
+                    .shadow(color: .sunsetOrange.opacity(0.4), radius: 12)
                 Text("Rankle")
-                    .font(.system(size: 44, weight: .bold, design: .rounded))
+                    .font(.custom("Avenir Next", size: 44))
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
                 Text("Rank what you love")
-                    .font(.subheadline)
+                    .font(.custom("Avenir Next", size: 16))
                     .foregroundColor(.secondary)
             }
         }
