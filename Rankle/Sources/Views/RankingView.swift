@@ -38,6 +38,22 @@ struct RankingView: View {
                     }
                 }
                 .padding(.horizontal)
+                if viewModel.canGoBack() {
+                    Button {
+                        viewModel.goBack()
+                    } label: {
+                        HStack {
+                            Image(systemName: "arrow.left")
+                            Text("Back")
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.white.opacity(0.8))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
+                }
             } else {
                 ProgressView("Preparing matchups…")
             }

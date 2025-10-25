@@ -1,5 +1,13 @@
 import Foundation
 
+struct RankingState {
+    var workingOrder: [RankleItem]
+    var newItemQueue: [RankleItem]
+    var insertionRange: Range<Int>
+    var candidate: RankleItem?
+    var matchup: Matchup
+}
+
 final class RankingViewModel: ObservableObject {
     @Published private(set) var list: RankleList
     @Published private(set) var currentMatchup: Matchup?
@@ -9,6 +17,7 @@ final class RankingViewModel: ObservableObject {
     private var newItemQueue: [RankleItem] = []
     private var insertionRange: Range<Int> = 0..<0
     private var candidate: RankleItem?
+    private var stateHistory: [RankingState] = []
 
     init(list: RankleList) {
         self.list = list
@@ -48,7 +57,19 @@ final class RankingViewModel: ObservableObject {
             return
         }
         let mid = (insertionRange.lowerBound + insertionRange.upperBound) / 2
-        currentMatchup = Matchup(left: candidate, right: workingOrder[mid])
+        let matchup = Matchup(left: candidate, right: workingOrder[mid])
+        
+        // Save current state before showing matchup
+        let state = RankingState(
+            workingOrder: workingOrder,
+            newItemQueue: newItemQueue,
+            insertionRange: insertionRange,
+            candidate: candidate,
+            matchup: matchup
+        )
+        stateHistory.append(state)
+        
+        currentMatchup = matchup
     }
 
     func choose(_ choice: MatchupChoice) {
@@ -65,6 +86,23 @@ final class RankingViewModel: ObservableObject {
         }
         currentMatchup = nil
         promptNextComparison()
+    }
+
+    func goBack() {
+        guard stateHistory.count > 1 else { return }
+        // Remove current state
+        stateHistory.removeLast()
+        // Restore previous state
+        let previous = stateHistory.last!
+        workingOrder = previous.workingOrder
+        newItemQueue = previous.newItemQueue
+        insertionRange = previous.insertionRange
+        candidate = previous.candidate
+        currentMatchup = previous.matchup
+    }
+    
+    func canGoBack() -> Bool {
+        return stateHistory.count > 1
     }
 
     private func completeSession() {
