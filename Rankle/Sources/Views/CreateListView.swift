@@ -4,7 +4,8 @@ struct CreateListView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var name: String = ""
-    @State private var itemsText: String = ""
+    @State private var currentItem: String = ""
+    @State private var items: [String] = []
     @State private var selectedColor: Color = .cyan
 
     var onCreate: (String, [String], Color) -> Void
@@ -18,10 +19,35 @@ struct CreateListView: View {
                 Section("Icon Color") {
                     ColorPicker("Color", selection: $selectedColor, supportsOpacity: false)
                 }
-                Section("Items (one per line)") {
-                    TextEditor(text: $itemsText)
-                        .frame(minHeight: 160)
-                        .font(.system(.body, design: .rounded))
+                Section("Add Items") {
+                    HStack {
+                        TextField("Item name", text: $currentItem)
+                        Button("Add") {
+                            let trimmed = currentItem.trimmingCharacters(in: .whitespacesAndNewlines)
+                            guard !trimmed.isEmpty else { return }
+                            items.append(trimmed)
+                            currentItem = ""
+                        }
+                        .buttonStyle(ThemeButtonStyle())
+                        .disabled(currentItem.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                }
+                Section("Items (\(items.count))") {
+                    if items.isEmpty {
+                        Text("No items yet")
+                            .foregroundColor(.secondary)
+                    } else {
+                        ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                            HStack {
+                                Text("\(index + 1).")
+                                    .foregroundColor(.secondary)
+                                Text(item)
+                            }
+                        }
+                        .onDelete { offsets in
+                            items.remove(atOffsets: offsets)
+                        }
+                    }
                 }
             }
             .navigationTitle("New List")
@@ -31,11 +57,10 @@ struct CreateListView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Create") {
-                        let items = itemsText.split(separator: "\n").map { String($0) }
                         onCreate(name, items, selectedColor)
                         dismiss()
                     }
-                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || items.isEmpty)
                 }
             }
         }

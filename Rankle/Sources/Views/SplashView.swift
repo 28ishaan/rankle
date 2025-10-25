@@ -10,7 +10,7 @@ struct SplashView: View {
                     .font(.system(size: 44, weight: .bold, design: .rounded))
                 Text("Rank what you love")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.secondary)
             }
         }
     }

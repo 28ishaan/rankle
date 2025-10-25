@@ -1,11 +1,12 @@
 import SwiftUI
 
 struct ContentView: View {
+    @ObservedObject var listsViewModel: ListsViewModel
     @State private var showSplash = true
 
     var body: some View {
         ZStack {
-            HomeView(viewModel: ListsViewModel())
+            HomeView(viewModel: listsViewModel)
                 .opacity(showSplash ? 0 : 1)
                 .offset(x: showSplash ? UIScreen.main.bounds.width * 0.15 : 0)
             if showSplash {
@@ -24,5 +25,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(listsViewModel: ListsViewModel())
 }

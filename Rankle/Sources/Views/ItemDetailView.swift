@@ -37,12 +37,12 @@ struct ItemDetailView: View {
             Section("Media") {
                 if item.media.isEmpty {
                     Text("No media yet")
-                        .foregroundStyle(.secondary)
+                        .foregroundColor(.secondary)
                 } else {
                     ForEach(item.media) { media in
                         HStack {
                             Image(systemName: media.type == .video ? "video" : "photo")
-                                .foregroundStyle(.secondary)
+                                .foregroundColor(.secondary)
                             Text(media.filename)
                                 .lineLimit(1)
                                 .truncationMode(.middle)
