@@ -49,6 +49,13 @@ final class ListsViewModel: ObservableObject {
         lists[index] = updated
         persist()
     }
+    
+    func importList(_ list: RankleList) {
+        // Generate new ID to avoid conflicts
+        let imported = RankleList(name: list.name, items: list.items, color: list.color)
+        lists.append(imported)
+        persist()
+    }
 
     private func persist() {
         storage.saveLists(lists)

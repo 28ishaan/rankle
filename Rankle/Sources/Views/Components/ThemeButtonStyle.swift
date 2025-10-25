@@ -4,7 +4,7 @@ struct ThemeButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(.headline, design: .rounded))
-            .foregroundStyle(.white)
+            .foregroundColor(.white)
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .background(

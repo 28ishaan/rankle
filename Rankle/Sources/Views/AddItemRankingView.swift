@@ -16,10 +16,10 @@ struct AddItemRankingView: View {
             if viewModel.isComplete {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 48))
-                    .foregroundStyle(.green)
+                    .foregroundColor(.green)
                 Text("Items Added!")
                     .font(.title2)
-                    .foregroundStyle(.white)
+                    .foregroundColor(.white)
                 Button("Done") {
                     onComplete(viewModel.getUpdatedList())
                     dismiss()
@@ -27,9 +27,8 @@ struct AddItemRankingView: View {
                 .buttonStyle(ThemeButtonStyle())
             } else if let matchup = viewModel.currentMatchup {
                 Text("Where should this item rank? (") + Text("\(viewModel.processedCount + 1)/\(viewModel.totalCount)") + Text(")")
-                Text("Where should this item rank? (") // placeholder to avoid string interpolation break
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundColor(.white)
                 HStack(spacing: 16) {
                     ChoiceCard(item: matchup.left) {
                         viewModel.choose(.left)

@@ -14,13 +14,13 @@ struct HomeView: View {
                     VStack(spacing: 12) {
                         Image(systemName: "list.bullet")
                             .font(.system(size: 48, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundColor(.white.opacity(0.7))
                         Text("No lists yet")
                             .font(.system(.headline, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.8))
+                            .foregroundColor(.white.opacity(0.8))
                         Text("Tap + to create your first list")
                             .font(.system(.subheadline, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.6))
+                            .foregroundColor(.white.opacity(0.6))
                     }
                     .padding()
                 } else {
@@ -35,7 +35,7 @@ struct HomeView: View {
                                         .frame(width: 28, height: 28)
                                     Text(list.name)
                                         .font(.system(.headline, design: .rounded))
-                                        .foregroundStyle(.white)
+                                        .foregroundColor(.white)
                                 }
                                 .padding(.vertical, 6)
                             }
@@ -53,7 +53,7 @@ struct HomeView: View {
                         isPresentingCreate = true
                     } label: {
                         Image(systemName: "plus")
-                            .foregroundStyle(.white)
+                            .foregroundColor(.white)
                     }
                 }
             }
