@@ -16,10 +16,10 @@ struct RankingView: View {
             if viewModel.isComplete {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 48))
-                    .foregroundColor(.green)
+                    .foregroundColor(.sunsetOrange)
                 Text("Ranking Complete")
                     .font(.title2)
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                 Button("Done") {
                     onComplete(viewModel.list)
                     dismiss()
@@ -28,7 +28,7 @@ struct RankingView: View {
             } else if let matchup = viewModel.currentMatchup {
                 Text("Which do you prefer?")
                     .font(.headline)
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                 HStack(spacing: 16) {
                     ChoiceCard(item: matchup.left) {
                         viewModel.choose(.left)
@@ -47,7 +47,7 @@ struct RankingView: View {
                             Text("Back")
                         }
                         .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(.sunsetOrange)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .background(.ultraThinMaterial)

@@ -3,6 +3,7 @@ import SwiftUI
 struct ListDetailView: View {
     @State var list: RankleList
     var onUpdate: (RankleList) -> Void
+    @Environment(\.colorScheme) var colorScheme
 
     @State private var newItemTitle: String = ""
     @State private var isPresentingRanker = false
@@ -22,6 +23,7 @@ struct ListDetailView: View {
                     }), supportsOpacity: false)
                 }
             }
+            .listRowBackground(Color.themeRowBackground(colorScheme))
             Section("Add Items (comma-separated)") {
                 HStack {
                     TextField("e.g., Item A, Item B, Item C", text: $newItemTitle)
@@ -34,6 +36,7 @@ struct ListDetailView: View {
                     .disabled(newItemTitle.split(separator: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }.isEmpty)
                 }
             }
+            .listRowBackground(Color.themeRowBackground(colorScheme))
             Section("Ranked Items") {
                 if list.items.isEmpty {
                     Text("No items yet")
@@ -59,7 +62,17 @@ struct ListDetailView: View {
                     }
                 }
             }
+            .listRowBackground(Color.themeRowBackground(colorScheme))
         }
+        .scrollContentBackground(.hidden)
+        .background(
+            LinearGradient(
+                colors: Color.themeDetailBackground(colorScheme),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+        )
         .navigationTitle(list.name)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -68,9 +81,12 @@ struct ListDetailView: View {
                         isPresentingShareSheet = true
                     } label: {
                         Image(systemName: "square.and.arrow.up")
+                            .foregroundColor(.primary)
                     }
                     EditButton()
+                        .foregroundColor(.primary)
                     Button("Rank Items") { isPresentingRanker = true }
+                        .foregroundColor(.primary)
                 }
             }
         }

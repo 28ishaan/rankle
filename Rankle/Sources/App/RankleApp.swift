@@ -3,15 +3,15 @@ import SwiftUI
 @main
 struct RankleApp: App {
     @StateObject private var listsViewModel = ListsViewModel()
+    @StateObject private var themeManager = ThemeManager()
     
     var body: some Scene {
         WindowGroup {
             ContentView(listsViewModel: listsViewModel)
-                .font(.system(.body, design: .rounded))
-                .tint(.white)
-                .preferredColorScheme(.dark)
-                .background(Color(navyBackground))
-                .environment(\.colorScheme, .dark)
+                .font(.custom("Avenir Next", size: 17))
+                .tint(Color.themePrimary(themeManager.colorScheme))
+                .preferredColorScheme(themeManager.colorScheme)
+                .environmentObject(themeManager)
                 .onOpenURL { url in
                     handleDeepLink(url)
                 }
@@ -24,5 +24,3 @@ struct RankleApp: App {
         }
     }
 }
-
-private let navyBackground = UIColor(red: 7/255, green: 16/255, blue: 39/255, alpha: 1)

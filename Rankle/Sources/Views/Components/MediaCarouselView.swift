@@ -35,7 +35,7 @@ struct MediaCarouselView: View {
             Color.black.opacity(0.2)
             Image(systemName: "photo")
                 .font(.largeTitle)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.sunsetOrange.opacity(0.6))
         }
     }
 }
