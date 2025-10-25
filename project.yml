@@ -29,6 +29,7 @@ targets:
       - path: Rankle/Tests
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.rankle.app.tests
+      GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: Rankle
 schemes:
