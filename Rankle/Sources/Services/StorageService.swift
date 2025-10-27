@@ -42,4 +42,9 @@ final class StorageService {
         try data.write(to: url, options: [.atomic])
         return filename
     }
+    
+    func loadMedia(filename: String) -> Data? {
+        let url = urlForMedia(filename: filename)
+        return try? Data(contentsOf: url)
+    }
 }

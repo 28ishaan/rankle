@@ -1,6 +1,44 @@
 import SwiftUI
 import PhotosUI
 
+struct MediaRowView: View {
+    let media: MediaItem
+    let storage: StorageService
+    
+    var body: some View {
+        HStack {
+            if media.type == .image {
+                if let imageData = storage.loadMedia(filename: media.filename),
+                   let uiImage = UIImage(data: imageData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 60, height: 60)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                } else {
+                    Image(systemName: "photo")
+                        .frame(width: 60, height: 60)
+                        .background(Color.gray.opacity(0.2))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+            } else {
+                Image(systemName: "video")
+                    .frame(width: 60, height: 60)
+                    .background(Color.blue.opacity(0.2))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(media.filename)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                Text(media.type == .video ? "Video" : "Photo")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+}
+
 struct ItemDetailView: View {
     let listId: UUID
     @State var item: RankleItem
@@ -40,13 +78,7 @@ struct ItemDetailView: View {
                         .foregroundColor(.secondary)
                 } else {
                     ForEach(item.media) { media in
-                        HStack {
-                            Image(systemName: media.type == .video ? "video" : "photo")
-                                .foregroundColor(.secondary)
-                            Text(media.filename)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                        }
+                        MediaRowView(media: media, storage: storage)
                     }
                     .onDelete { offsets in
                         item.media.remove(atOffsets: offsets)
@@ -55,6 +87,7 @@ struct ItemDetailView: View {
                 }
             }
         }
+        .listRowBackground(Color.clear)
         .navigationTitle(item.title)
     }
 }
