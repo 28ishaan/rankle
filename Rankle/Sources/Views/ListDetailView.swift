@@ -24,6 +24,33 @@ struct ListDetailView: View {
                 }
             }
             .listRowBackground(Color.themeRowBackground(colorScheme))
+            Section("Collaboration") {
+                let isOwner = list.ownerId == UserService.shared.currentUserId
+                Toggle("Collaborative list", isOn: Binding(get: { list.isCollaborative }, set: { value in
+                    if value {
+                        // Turning ON: set owner to current user if not already
+                        if !list.isCollaborative {
+                            list.ownerId = UserService.shared.currentUserId
+                        }
+                        list.isCollaborative = true
+                        onUpdate(list)
+                    } else {
+                        // Turning OFF: only owner can do this
+                        if isOwner {
+                            list.isCollaborative = false
+                            list.collaborators.removeAll()
+                            onUpdate(list)
+                        }
+                    }
+                }))
+                .disabled(!isOwner && list.isCollaborative)
+                if !isOwner && list.isCollaborative {
+                    Text("Only the owner can disable collaboration.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .listRowBackground(Color.themeRowBackground(colorScheme))
             Section("Add Items (comma-separated)") {
                 HStack {
                     TextField("e.g., Item A, Item B, Item C", text: $newItemTitle)
@@ -37,6 +64,18 @@ struct ListDetailView: View {
                 }
             }
             .listRowBackground(Color.themeRowBackground(colorScheme))
+            if list.isCollaborative {
+                Section("Overall Collaboration Ranking") {
+                    let aggregated = StorageService().aggregateRanking(for: list)
+                    ForEach(Array(aggregated.enumerated()), id: \.element.id) { index, item in
+                        HStack {
+                            Text("\(index + 1).")
+                                .foregroundColor(.secondary)
+                            Text(item.title)
+                        }
+                    }
+                }
+            }
             Section("Ranked Items") {
                 if list.items.isEmpty {
                     Text("No items yet")

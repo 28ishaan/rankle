@@ -19,6 +19,13 @@ struct RankleApp: App {
     }
     
     private func handleDeepLink(_ url: URL) {
+        // Contribution link
+        if let contribution = SharingService.shared.parseContribution(url: url) {
+            let ranking = CollaboratorRanking(userId: contribution.userId, displayName: contribution.displayName, ranking: contribution.ranking)
+            listsViewModel.upsertContribution(listId: contribution.listId, ranking: ranking)
+            return
+        }
+        // List import link
         if let list = SharingService.shared.parseDeepLink(url: url) {
             listsViewModel.importList(list)
         }
