@@ -42,6 +42,18 @@ struct HomeView: View {
                                     Text(list.name)
                                         .font(.system(.headline, design: .rounded))
                                         .foregroundColor(.primary)
+                                    if list.isCollaborative {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "person.2.fill")
+                                            Text("Collaborative")
+                                                .font(.caption)
+                                        }
+                                        .foregroundColor(.secondary)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(.thinMaterial)
+                                        .clipShape(Capsule())
+                                    }
                                 }
                                 .padding(.vertical, 6)
                             }
@@ -90,8 +102,8 @@ struct HomeView: View {
                 }
             }
             .sheet(isPresented: $isPresentingCreate) {
-                CreateListView { name, items, color in
-                    viewModel.createList(name: name, items: items, color: color)
+                CreateListView { name, items, color, isCollaborative in
+                    viewModel.createList(name: name, items: items, color: color, isCollaborative: isCollaborative)
                 }
             }
         }

@@ -16,6 +16,21 @@ final class SharingService {
         let urlString = "rankle://i/\(token)"
         return URL(string: urlString)
     }
+
+    // Generate a contribution link for a collaborator's personal ranking
+    struct Contribution: Codable {
+        let listId: UUID
+        let userId: UUID
+        let displayName: String?
+        let ranking: [UUID]
+    }
+
+    func generateContributionLink(listId: UUID, userId: UUID, displayName: String?, ranking: [UUID]) -> URL? {
+        let payload = Contribution(listId: listId, userId: userId, displayName: displayName, ranking: ranking)
+        guard let data = try? JSONEncoder().encode(payload) else { return nil }
+        let token = base64URLEncode(compress(data))
+        return URL(string: "rankle://cr/\(token)")
+    }
     
     // Generate clipboard text for non-Rankle users
     func generateClipboardText(for list: RankleList) -> String {
@@ -42,6 +57,8 @@ final class SharingService {
             let json = decompress(data)
             return try? JSONDecoder().decode(RankleList.self, from: json)
         }
+        // Contribution links are handled by parseContribution(url:)
+
         // Legacy format: rankle://import?data=<base64>
         if url.host == "import",
            let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
@@ -50,6 +67,15 @@ final class SharingService {
             return try? JSONDecoder().decode(RankleList.self, from: jsonData)
         }
         return nil
+    }
+
+    // Parse a collaborator contribution link (rankle://cr/<token>)
+    func parseContribution(url: URL) -> Contribution? {
+        guard url.scheme == "rankle", url.host == "cr" else { return nil }
+        let token = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        guard let data = base64URLDecode(token) else { return nil }
+        let json = decompress(data)
+        return try? JSONDecoder().decode(Contribution.self, from: json)
     }
 
     // MARK: - Encoding helpers

@@ -31,17 +31,39 @@ struct RankleList: Identifiable, Codable {
     var name: String
     var items: [RankleItem]
     var colorRGBA: RGBAColor
+    // Collaborative lists
+    var isCollaborative: Bool = false
+    var ownerId: UUID = UUID()
+    var collaborators: [CollaboratorRanking] = []
 
-    init(id: UUID = UUID(), name: String, items: [RankleItem] = [], color: Color = .cyan) {
+    init(id: UUID = UUID(), name: String, items: [RankleItem] = [], color: Color = .cyan, isCollaborative: Bool = false) {
         self.id = id
         self.name = name
         self.items = items
         self.colorRGBA = RGBAColor(color: color)
+        self.isCollaborative = isCollaborative
     }
 
     var color: Color {
         get { colorRGBA.color }
         set { colorRGBA = RGBAColor(color: newValue) }
+    }
+}
+
+struct CollaboratorRanking: Identifiable, Codable, Hashable {
+    let id: UUID
+    var userId: UUID
+    var displayName: String?
+    // Order of item ids representing the user's personal ranking
+    var ranking: [UUID]
+    var updatedAt: Date
+
+    init(id: UUID = UUID(), userId: UUID, displayName: String? = nil, ranking: [UUID], updatedAt: Date = Date()) {
+        self.id = id
+        self.userId = userId
+        self.displayName = displayName
+        self.ranking = ranking
+        self.updatedAt = updatedAt
     }
 }
 

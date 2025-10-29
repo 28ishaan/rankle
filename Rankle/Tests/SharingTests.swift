@@ -24,8 +24,7 @@ final class SharingTests: XCTestCase {
         
         XCTAssertNotNil(url, "Deep link should be generated")
         XCTAssertEqual(url?.scheme, "rankle", "URL scheme should be 'rankle'")
-        XCTAssertEqual(url?.host, "import", "URL host should be 'import'")
-        XCTAssertTrue(url?.absoluteString.contains("data=") ?? false, "URL should contain data parameter")
+        XCTAssertEqual(url?.host, "i", "URL host should be 'i' for compact links")
     }
     
     func testDeepLinkParsing() {
@@ -101,6 +100,42 @@ final class SharingTests: XCTestCase {
         XCTAssertEqual(viewModel.lists.count, initialCount + 1, "Should add one list")
         XCTAssertEqual(viewModel.lists.last?.name, testList.name, "Imported list name should match")
         XCTAssertNotEqual(viewModel.lists.last?.id, testList.id, "Imported list should have new ID")
+    }
+}
+
+final class CollaborativeTests: XCTestCase {
+    func testAggregationAveragePositions() {
+        // Items
+        let a = RankleItem(title: "A")
+        let b = RankleItem(title: "B")
+        let c = RankleItem(title: "C")
+        var list = RankleList(name: "Collab", items: [a, b, c], isCollaborative: true)
+        // Two collaborators
+        let r1 = CollaboratorRanking(userId: UUID(), ranking: [a.id, b.id, c.id])
+        let r2 = CollaboratorRanking(userId: UUID(), ranking: [b.id, c.id, a.id])
+        list.collaborators = [r1, r2]
+        let aggregated = StorageService().aggregateRanking(for: list)
+        // B should be top (1 and 2), then A/C depending on scores
+        XCTAssertEqual(aggregated.first?.id, b.id)
+    }
+    
+    func testUpsertContributionUpdatesAggregation() {
+        let a = RankleItem(title: "A")
+        let b = RankleItem(title: "B")
+        let c = RankleItem(title: "C")
+        let vm = ListsViewModel()
+        vm.createList(name: "Collab", items: [a.title, b.title, c.title], isCollaborative: true)
+        guard var list = vm.lists.last else { return XCTFail("Missing list") }
+        list.items = [a, b, c]
+        vm.replaceList(list)
+        let uid = UUID()
+        vm.upsertContribution(listId: list.id, ranking: CollaboratorRanking(userId: uid, ranking: [a.id, b.id, c.id]))
+        vm.upsertContribution(listId: list.id, ranking: CollaboratorRanking(userId: UUID(), ranking: [b.id, c.id, a.id]))
+        let updated = vm.lists.last!
+        XCTAssertTrue(updated.isCollaborative)
+        XCTAssertEqual(updated.collaborators.count, 2)
+        // Expect B likely first
+        XCTAssertEqual(updated.items.first?.title, "B")
     }
 }
 

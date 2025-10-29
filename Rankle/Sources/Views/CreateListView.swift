@@ -6,9 +6,10 @@ struct CreateListView: View {
     @State private var name: String = ""
     @State private var currentItem: String = ""
     @State private var items: [String] = []
+    @State private var isCollaborative: Bool = false
     @State private var selectedColor: Color = .cyan
 
-    var onCreate: (String, [String], Color) -> Void
+    var onCreate: (String, [String], Color, Bool) -> Void
 
     var body: some View {
         NavigationStack {
@@ -18,6 +19,9 @@ struct CreateListView: View {
                 }
                 Section("Icon Color") {
                     ColorPicker("Color", selection: $selectedColor, supportsOpacity: false)
+                }
+                Section("Collaboration") {
+                    Toggle("Create as collaborative list", isOn: $isCollaborative)
                 }
                 Section("Add Items") {
                     HStack {
@@ -57,7 +61,7 @@ struct CreateListView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Create") {
-                        onCreate(name, items, selectedColor)
+                        onCreate(name, items, selectedColor, isCollaborative)
                         dismiss()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || items.isEmpty)
@@ -68,5 +72,5 @@ struct CreateListView: View {
 }
 
 #Preview {
-    CreateListView { _, _, _ in }
+    CreateListView { _, _, _, _ in }
 }
