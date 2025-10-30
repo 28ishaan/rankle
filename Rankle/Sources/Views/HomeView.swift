@@ -34,7 +34,7 @@ struct HomeView: View {
                         ForEach(viewModel.lists) { list in
                             NavigationLink(destination: ListDetailView(list: list, onUpdate: { updated in
                                 viewModel.replaceList(updated)
-                            })) {
+                            }, listsViewModel: viewModel)) {
                                 HStack(spacing: 12) {
                                     Circle()
                                         .fill(list.color)

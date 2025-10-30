@@ -3,6 +3,7 @@ import SwiftUI
 struct ListDetailView: View {
     @State var list: RankleList
     var onUpdate: (RankleList) -> Void
+    @ObservedObject var listsViewModel: ListsViewModel
     @Environment(\.colorScheme) var colorScheme
 
     @State private var newItemTitle: String = ""
@@ -43,7 +44,7 @@ struct ListDetailView: View {
                         }
                     }
                 }))
-                .disabled(!isOwner && list.isCollaborative)
+                .disabled(list.isCollaborative && !isOwner)
                 if !isOwner && list.isCollaborative {
                     Text("Only the owner can disable collaboration.")
                         .font(.caption)
@@ -129,6 +130,11 @@ struct ListDetailView: View {
                 }
             }
         }
+        .onReceive(listsViewModel.$lists) { lists in
+            if let updated = lists.first(where: { $0.id == list.id }) {
+                self.list = updated
+            }
+        }
         .confirmationDialog("Share List", isPresented: $isPresentingShareSheet) {
             Button("Share to Rankle Users") {
                 shareToRankleUsers()
@@ -175,5 +181,9 @@ struct ListDetailView: View {
 }
 
 #Preview {
-    ListDetailView(list: RankleList(name: "Sample", items: ["A","B","C"].map { RankleItem(title: $0) })) { _ in }
+    ListDetailView(
+        list: RankleList(name: "Sample", items: ["A","B","C"].map { RankleItem(title: $0) }),
+        onUpdate: { _ in },
+        listsViewModel: ListsViewModel()
+    )
 }

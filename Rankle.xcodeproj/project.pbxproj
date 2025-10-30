@@ -31,6 +31,8 @@
 		F56B2042625E6A2455609673 /* CollaborativeListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E48D00CB5D4201D5B81E0E /* CollaborativeListTests.swift */; };
 		F92FCAC6FBE1CD9916864F03 /* CreateListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1771838BF54705BC3517A3A4 /* CreateListView.swift */; };
 		F9A7E79A83C6B2F78F1CBE5A /* ListDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74FB52386BB78219E708173C /* ListDetailView.swift */; };
+		ABCDEF001122334455667702 /* StorageServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDEF001122334455667701 /* StorageServiceTests.swift */; };
+		ABCDEF001122334455667704 /* CollaborationsBehaviorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDEF001122334455667703 /* CollaborationsBehaviorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +72,8 @@
 		F781A4029B56EBA1D2F4ABA4 /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
 		FA75A879420FD1B65F1F6008 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		FFB56B18F6850800760508E8 /* Rankle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rankle.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ABCDEF001122334455667701 /* StorageServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageServiceTests.swift; sourceTree = "<group>"; };
+		ABCDEF001122334455667703 /* CollaborationsBehaviorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborationsBehaviorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -148,6 +152,8 @@
 				64E48D00CB5D4201D5B81E0E /* CollaborativeListTests.swift */,
 				CAAFE7E7AD4B065E483B227C /* RankingTests.swift */,
 				DCF7596B279EC6FF66F309C8 /* SharingTests.swift */,
+				ABCDEF001122334455667701 /* StorageServiceTests.swift */,
+				ABCDEF001122334455667703 /* CollaborationsBehaviorTests.swift */,
 			);
 			name = Tests;
 			path = Rankle/Tests;
@@ -281,6 +287,8 @@
 				F56B2042625E6A2455609673 /* CollaborativeListTests.swift in Sources */,
 				1C908EDA095AC8BC2A753039 /* RankingTests.swift in Sources */,
 				42235ADDDC1B429C32096070 /* SharingTests.swift in Sources */,
+				ABCDEF001122334455667702 /* StorageServiceTests.swift in Sources */,
+				ABCDEF001122334455667704 /* CollaborationsBehaviorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -335,7 +343,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+                MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = ishaanmantri.Rankle;
 				PRODUCT_NAME = Rankle;
 				SDKROOT = iphoneos;
@@ -511,7 +519,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+                MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = ishaanmantri.Rankle;
 				PRODUCT_NAME = Rankle;
 				SDKROOT = iphoneos;
