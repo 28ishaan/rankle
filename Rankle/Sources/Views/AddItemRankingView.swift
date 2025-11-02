@@ -1,13 +1,23 @@
 import SwiftUI
 
+private struct ShareableURL: Identifiable {
+    let id = UUID()
+    let url: URL
+}
+
 struct AddItemRankingView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: AddItemRankingViewModel
+    @State private var shareURL: ShareableURL?
 
     var onComplete: ([RankleItem]) -> Void
+    let listId: UUID?
+    let isCollaborative: Bool
 
-    init(existingItems: [RankleItem], newItems: [RankleItem], onComplete: @escaping ([RankleItem]) -> Void) {
+    init(existingItems: [RankleItem], newItems: [RankleItem], listId: UUID? = nil, isCollaborative: Bool = false, onComplete: @escaping ([RankleItem]) -> Void) {
         _viewModel = StateObject(wrappedValue: AddItemRankingViewModel(existingItems: existingItems, newItems: newItems))
+        self.listId = listId
+        self.isCollaborative = isCollaborative
         self.onComplete = onComplete
     }
 
@@ -20,6 +30,27 @@ struct AddItemRankingView: View {
                 Text("Items Added!")
                     .font(.title2)
                     .foregroundColor(.primary)
+                
+                if isCollaborative, let listId = listId {
+                    Button {
+                        let ranking = viewModel.getUpdatedList().map { $0.id }
+                        if let url = SharingService.shared.generateContributionLink(
+                            listId: listId,
+                            userId: UserService.shared.currentUserId,
+                            displayName: nil,
+                            ranking: ranking
+                        ) {
+                            shareURL = ShareableURL(url: url)
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("Share Contribution")
+                        }
+                    }
+                    .buttonStyle(ThemeButtonStyle())
+                }
+                
                 Button("Done") {
                     onComplete(viewModel.getUpdatedList())
                     dismiss()
@@ -45,7 +76,26 @@ struct AddItemRankingView: View {
         }
         .padding()
         .presentationDetents([.medium, .large])
+        .sheet(item: $shareURL) { shareable in
+            ShareSheet(activityItems: [shareable.url])
+        }
     }
+}
+
+// SwiftUI wrapper for UIActivityViewController
+private struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    @Environment(\.dismiss) private var dismiss
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+        controller.completionWithItemsHandler = { _, _, _, _ in
+            dismiss()
+        }
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 private struct ChoiceCard: View {

@@ -8,9 +8,9 @@ Rankle is an iOS application developed to help users create and manage ranked li
 
 ## Data Collection
 
-### No Personal Information Collected
+### No Personal Information Collected by Us
 
-Rankle does **not** collect, store, or transmit any personal information to our servers or third parties. Your data remains entirely on your device.
+Rankle does **not** collect, store, or transmit any personal information to our servers or third-party services. We do not operate any servers or data collection services.
 
 ### Local Data Storage
 
@@ -21,27 +21,61 @@ All ranked lists, items, media attachments, and rankings are stored locally on y
 - Media files (photos/videos) you attach to items
 - Custom color preferences
 
-This data is stored in your device's Documents directory and is never accessed by us or transmitted outside your device.
+### iCloud and CloudKit Integration
+
+For collaborative lists (shared rankings with other users), Rankle uses **Apple's iCloud/CloudKit** service to synchronize data across devices. When you enable collaboration on a list:
+
+- The list and collaborator rankings are stored in your **private iCloud database**
+- Data counts against your **personal iCloud storage quota** (5GB free per Apple account)
+- Data is encrypted by Apple and synced across your devices signed into the same iCloud account
+- Data is shared with collaborators you explicitly invite via sharing links
+- **No media files** (photos/videos) are synced for collaborative lists to optimize storage
+
+**Important Notes:**
+- Collaborative features require you to be signed into iCloud
+- You can use Rankle entirely offline for non-collaborative lists
+- All collaborative data is managed through Apple's CloudKit - we do not have access to your data
+- You can disable collaboration at any time, which will stop CloudKit syncing for that list
 
 ### No Third-Party Services
 
-Rankle does not use any third-party analytics, advertising, or tracking services. The app does not contain any advertising or monetization features.
+Rankle does not use any third-party analytics, advertising, or tracking services. The app does not contain any advertising or monetization features. We do not use any third-party SDKs that collect data.
 
-### No Network Access
+### Network Access
 
-Rankle operates entirely offline and does not require internet connectivity. It does not make any network requests or communicate with external servers.
+- **Non-collaborative lists:** Rankle operates entirely offline and does not require internet connectivity
+- **Collaborative lists:** Requires internet connectivity and an active iCloud account to sync with other collaborators
 
 ## Your Rights
 
-Since all data is stored locally on your device:
+Since your data is stored locally or in your iCloud account:
 
 - **You have complete control** over your data at all times
-- **You can delete your data** at any time by deleting the app
-- **Your data is private** and cannot be accessed by us or third parties
+- **You can delete your data** at any time by deleting the app or removing lists
+- **You control collaboration** - you choose which lists to share and with whom
+- **Your data is private** - we cannot access your iCloud data or local device data
+- **You own your data** - everything is stored in your personal iCloud account or on your device
 
 ## Data Security
 
-Data security is managed entirely by Apple's iOS operating system using standard file system encryption. We do not implement additional security measures because we never access your data.
+- **Local data:** Security is managed by Apple's iOS operating system using standard file system encryption
+- **CloudKit data:** All data synced via CloudKit is encrypted by Apple using industry-standard encryption
+- **Access control:** Only users you explicitly share links with can contribute to collaborative lists
+- **No external servers:** We do not operate any servers, so there is no risk of data breaches on our infrastructure
+
+## Data Sharing
+
+Rankle allows you to share lists with other users through deep links. When you share a list:
+
+- A compressed link is generated containing the list data
+- The recipient can import the list into their own Rankle app
+- For collaborative lists, recipients can contribute their own rankings
+- You control who can access your lists through sharing
+
+**We do not:**
+- Track who you share lists with
+- Monitor list contents
+- Access any shared data
 
 ## Changes to This Policy
 
@@ -53,5 +87,9 @@ If you have any questions about this Privacy Policy, please contact us through t
 
 ## Summary
 
-**Rankle collects zero personal information.** All data stays on your device. We don't track you, analyze you, or share your data with anyone. Ever.
-
+**Rankle respects your privacy:**
+- We collect zero personal information
+- All data stays on your device or in your personal iCloud account
+- We don't track you, analyze you, or share your data with anyone
+- Collaborative features use Apple's secure CloudKit infrastructure
+- You have full control over your data at all times

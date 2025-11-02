@@ -9,8 +9,10 @@
 /* Begin PBXBuildFile section */
 		147FF0A217582EE2C800BC59 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F781A4029B56EBA1D2F4ABA4 /* ThemeManager.swift */; };
 		1C908EDA095AC8BC2A753039 /* RankingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAAFE7E7AD4B065E483B227C /* RankingTests.swift */; };
+		160DAD71FD3E4F81B49BEB8E /* CloudKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06D1B051A90142EDAE11EBC1 /* CloudKitService.swift */; };
 		2421BFD15A6953C997B8A1B2 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0E5C110D595A59960DEFCB /* StorageService.swift */; };
 		3506D6DE2CF8F6528EFFC787 /* ItemDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420F7CC9914AE1E8BB03E6D2 /* ItemDetailView.swift */; };
+		C2145980249D4BBEA32F4629 /* CloudKitNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB50C94FCFE146C2B60ED286 /* CloudKitNotifications.swift */; };
 		42235ADDDC1B429C32096070 /* SharingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF7596B279EC6FF66F309C8 /* SharingTests.swift */; };
 		4AF72484E90E0E04FDB24327 /* UserService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFFBCEDF7A5037E9E99D5BA8 /* UserService.swift */; };
 		52A2E0747DD45278F26FCA38 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4F96B63329F79E04001918 /* SplashView.swift */; };
@@ -23,16 +25,19 @@
 		9E4CC0AF089D78C38BA88261 /* AddItemRankingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ED891A3479A4B196279B457 /* AddItemRankingViewModel.swift */; };
 		A0386CD51777E92E7F0B6C67 /* MediaCarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 592DE0B77CB869BD0EB056D4 /* MediaCarouselView.swift */; };
 		A5450BED5414A91B518DF607 /* ListsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D625C531854BDA27C72640E /* ListsViewModel.swift */; };
+		ABCDEF001122334455667702 /* StorageServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDEF001122334455667701 /* StorageServiceTests.swift */; };
+		ABCDEF001122334455667704 /* CollaborationsBehaviorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDEF001122334455667703 /* CollaborationsBehaviorTests.swift */; };
+		ABCDEF001122334455667706 /* RankingSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDEF001122334455667705 /* RankingSyncTests.swift */; };
+		8E3F4A5B9C2D1E6F7A8B9C0D /* CloudKitServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D2A1B3C4E5F6A7B8C9D0E1 /* CloudKitServiceTests.swift */; };
 		ADE7515F0B1DDBE179AB4CE0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23543D05405A6F7DF546A143 /* ContentView.swift */; };
 		AF426D42A4F84ACFE87A29EA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E0A5FBE58C0EE3EE2FC38E03 /* Assets.xcassets */; };
+		302A927A49744F699680F22A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 79B38D7D01F049A18FE9F339 /* PrivacyInfo.xcprivacy */; };
 		D003885DE1A1A831824EC00C /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858EE5D216E8A09EF1D7FFDC /* HomeView.swift */; };
 		D0EB8F71885924C617A9CF1D /* SharingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97C2213E6F41183045FC34C5 /* SharingService.swift */; };
 		D89BBE3ADDF015EE8452E0DB /* RankingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FE0B6482A52DB6F66CF64E /* RankingViewModel.swift */; };
 		F56B2042625E6A2455609673 /* CollaborativeListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E48D00CB5D4201D5B81E0E /* CollaborativeListTests.swift */; };
 		F92FCAC6FBE1CD9916864F03 /* CreateListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1771838BF54705BC3517A3A4 /* CreateListView.swift */; };
 		F9A7E79A83C6B2F78F1CBE5A /* ListDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74FB52386BB78219E708173C /* ListDetailView.swift */; };
-		ABCDEF001122334455667702 /* StorageServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDEF001122334455667701 /* StorageServiceTests.swift */; };
-		ABCDEF001122334455667704 /* CollaborationsBehaviorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDEF001122334455667703 /* CollaborationsBehaviorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,7 +64,14 @@
 		7ED891A3479A4B196279B457 /* AddItemRankingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddItemRankingViewModel.swift; sourceTree = "<group>"; };
 		858EE5D216E8A09EF1D7FFDC /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		8D625C531854BDA27C72640E /* ListsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsViewModel.swift; sourceTree = "<group>"; };
+		06D1B051A90142EDAE11EBC1 /* CloudKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitService.swift; sourceTree = "<group>"; };
 		97C2213E6F41183045FC34C5 /* SharingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharingService.swift; sourceTree = "<group>"; };
+		A3D6ABCD2EB5418E00DCF670 /* RankleRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = RankleRelease.entitlements; path = Rankle/RankleRelease.entitlements; sourceTree = "<group>"; };
+		CB50C94FCFE146C2B60ED286 /* CloudKitNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitNotifications.swift; sourceTree = "<group>"; };
+		ABCDEF001122334455667701 /* StorageServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageServiceTests.swift; sourceTree = "<group>"; };
+		ABCDEF001122334455667703 /* CollaborationsBehaviorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborationsBehaviorTests.swift; sourceTree = "<group>"; };
+		ABCDEF001122334455667705 /* RankingSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingSyncTests.swift; sourceTree = "<group>"; };
+		7D2A1B3C4E5F6A7B8C9D0E1 /* CloudKitServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitServiceTests.swift; sourceTree = "<group>"; };
 		B7348D15F54E5F5C35A06BAE /* AddItemRankingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddItemRankingView.swift; sourceTree = "<group>"; };
 		BC0E5C110D595A59960DEFCB /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
 		CAAFE7E7AD4B065E483B227C /* RankingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingTests.swift; sourceTree = "<group>"; };
@@ -68,20 +80,21 @@
 		DD4F96B63329F79E04001918 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		E0A5FBE58C0EE3EE2FC38E03 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E4FE0B6482A52DB6F66CF64E /* RankingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingViewModel.swift; sourceTree = "<group>"; };
+		79B38D7D01F049A18FE9F339 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Rankle/Supporting/PrivacyInfo.xcprivacy"; sourceTree = "<group>"; };
 		F5B13C337DD8A6826D973C0C /* ThemeButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeButtonStyle.swift; sourceTree = "<group>"; };
 		F781A4029B56EBA1D2F4ABA4 /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
 		FA75A879420FD1B65F1F6008 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		FFB56B18F6850800760508E8 /* Rankle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rankle.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		ABCDEF001122334455667701 /* StorageServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageServiceTests.swift; sourceTree = "<group>"; };
-		ABCDEF001122334455667703 /* CollaborationsBehaviorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborationsBehaviorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		10B0ED737A91A3EB14AEA54C = {
 			isa = PBXGroup;
 			children = (
+				A3D6ABCD2EB5418E00DCF670 /* RankleRelease.entitlements */,
 				4D5FC6BC2289331B4E7C9C29 /* Sources */,
 				906C56DC6CAC71E0D1D2E0A1 /* Tests */,
+				F302A927A49744F699680F229 /* Supporting */,
 				E6265006F2AA387BB7C38EF8 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -114,6 +127,8 @@
 		58C6FEB2F193A1D31E12F356 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				06D1B051A90142EDAE11EBC1 /* CloudKitService.swift */,
+				CB50C94FCFE146C2B60ED286 /* CloudKitNotifications.swift */,
 				97C2213E6F41183045FC34C5 /* SharingService.swift */,
 				BC0E5C110D595A59960DEFCB /* StorageService.swift */,
 				F781A4029B56EBA1D2F4ABA4 /* ThemeManager.swift */,
@@ -154,6 +169,8 @@
 				DCF7596B279EC6FF66F309C8 /* SharingTests.swift */,
 				ABCDEF001122334455667701 /* StorageServiceTests.swift */,
 				ABCDEF001122334455667703 /* CollaborationsBehaviorTests.swift */,
+				ABCDEF001122334455667705 /* RankingSyncTests.swift */,
+				7D2A1B3C4E5F6A7B8C9D0E1 /* CloudKitServiceTests.swift */,
 			);
 			name = Tests;
 			path = Rankle/Tests;
@@ -173,6 +190,14 @@
 				E0A5FBE58C0EE3EE2FC38E03 /* Assets.xcassets */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		F302A927A49744F699680F229 /* Supporting */ = {
+			isa = PBXGroup;
+			children = (
+				79B38D7D01F049A18FE9F339 /* PrivacyInfo.xcprivacy */,
+			);
+			name = Supporting;
 			sourceTree = "<group>";
 		};
 		E6265006F2AA387BB7C38EF8 /* Products */ = {
@@ -274,6 +299,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AF426D42A4F84ACFE87A29EA /* Assets.xcassets in Resources */,
+				302A927A49744F699680F22A /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -289,6 +315,8 @@
 				42235ADDDC1B429C32096070 /* SharingTests.swift in Sources */,
 				ABCDEF001122334455667702 /* StorageServiceTests.swift in Sources */,
 				ABCDEF001122334455667704 /* CollaborationsBehaviorTests.swift in Sources */,
+				ABCDEF001122334455667706 /* RankingSyncTests.swift in Sources */,
+				8E3F4A5B9C2D1E6F7A8B9C0D /* CloudKitServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -310,6 +338,8 @@
 				7B444C0D157147CA8650AE65 /* RankingView.swift in Sources */,
 				D89BBE3ADDF015EE8452E0DB /* RankingViewModel.swift in Sources */,
 				8CFE5E86A04CB20BF467C476 /* RankleApp.swift in Sources */,
+				160DAD71FD3E4F81B49BEB8E /* CloudKitService.swift in Sources */,
+				C2145980249D4BBEA32F4629 /* CloudKitNotifications.swift in Sources */,
 				D0EB8F71885924C617A9CF1D /* SharingService.swift in Sources */,
 				52A2E0747DD45278F26FCA38 /* SplashView.swift in Sources */,
 				2421BFD15A6953C997B8A1B2 /* StorageService.swift in Sources */,
@@ -335,6 +365,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Rankle/RankleRelease.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = MKKFLM9TW7;
 				INFOPLIST_FILE = Rankle/Supporting/Info.plist;
@@ -343,7 +374,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-                MARKETING_VERSION = 2.2;
+				MARKETING_VERSION = 2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = ishaanmantri.Rankle;
 				PRODUCT_NAME = Rankle;
 				SDKROOT = iphoneos;
@@ -511,6 +542,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Rankle/RankleRelease.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = MKKFLM9TW7;
 				INFOPLIST_FILE = Rankle/Supporting/Info.plist;
@@ -519,7 +551,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-                MARKETING_VERSION = 2.2;
+				MARKETING_VERSION = 2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = ishaanmantri.Rankle;
 				PRODUCT_NAME = Rankle;
 				SDKROOT = iphoneos;

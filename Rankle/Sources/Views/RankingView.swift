@@ -1,13 +1,21 @@
 import SwiftUI
 
+private struct ShareableURL: Identifiable {
+    let id = UUID()
+    let url: URL
+}
+
 struct RankingView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: RankingViewModel
+    @State private var shareURL: ShareableURL?
 
     var onComplete: (RankleList) -> Void
+    private let originalList: RankleList
 
     init(list: RankleList, onComplete: @escaping (RankleList) -> Void) {
         _viewModel = StateObject(wrappedValue: RankingViewModel(list: list))
+        self.originalList = list
         self.onComplete = onComplete
     }
 
@@ -20,6 +28,21 @@ struct RankingView: View {
                 Text("Ranking Complete")
                     .font(.title2)
                     .foregroundColor(.primary)
+                
+                if originalList.isCollaborative {
+                    Button {
+                        if let url = generateContributionURL() {
+                            shareURL = ShareableURL(url: url)
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("Share Contribution")
+                        }
+                    }
+                    .buttonStyle(ThemeButtonStyle())
+                }
+                
                 Button("Done") {
                     onComplete(viewModel.list)
                     dismiss()
@@ -61,7 +84,37 @@ struct RankingView: View {
         }
         .padding()
         .presentationDetents([.medium, .large])
+        .sheet(item: $shareURL) { shareable in
+            ShareSheet(activityItems: [shareable.url])
+        }
     }
+    
+    private func generateContributionURL() -> URL? {
+        guard originalList.isCollaborative else { return nil }
+        let ranking = viewModel.list.items.map { $0.id }
+        return SharingService.shared.generateContributionLink(
+            listId: originalList.id,
+            userId: UserService.shared.currentUserId,
+            displayName: nil,
+            ranking: ranking
+        )
+    }
+}
+
+// SwiftUI wrapper for UIActivityViewController
+private struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    @Environment(\.dismiss) private var dismiss
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+        controller.completionWithItemsHandler = { _, _, _, _ in
+            dismiss()
+        }
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 private struct ChoiceCard: View {

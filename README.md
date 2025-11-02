@@ -21,9 +21,15 @@ Rankle helps you rank your favorites through simple pairwise comparisons. Whethe
 - **Attach Photos & Videos**: Add media to any item in your list
 - **Media Carousel**: Swipe through multiple photos/videos during ranking matchups
 
+### Collaborative Lists
+- **Share & Collaborate**: Create collaborative lists and share them with others
+- **Real-time Sync**: See collaborator rankings update in real-time via iCloud/CloudKit
+- **Aggregated Rankings**: View combined rankings from all contributors
+
 ### Privacy First
-- **100% Local**: All data stays on your device - no cloud, no tracking, no data collection
-- **Offline**: Works completely offline, no internet required
+- **Local Storage**: Non-collaborative lists stay on your device - no cloud, no tracking, no data collection
+- **iCloud Sync**: Collaborative lists use Apple's secure CloudKit (requires iCloud account)
+- **Offline Support**: Non-collaborative lists work completely offline
 
 ## How to Use
 

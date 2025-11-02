@@ -43,47 +43,57 @@ struct ItemDetailView: View {
     let listId: UUID
     @State var item: RankleItem
     var onUpdate: (RankleItem) -> Void
+    var isCollaborative: Bool = false
 
     @State private var pickerItems: [PhotosPickerItem] = []
     private let storage = StorageService()
 
     var body: some View {
         List {
-            Section("Add Media") {
-                PhotosPicker(selection: $pickerItems, maxSelectionCount: 10, matching: .any(of: [.images, .videos])) {
-                    HStack {
-                        Image(systemName: "photo.on.rectangle")
-                        Text("Select Photos/Videos")
+            if !isCollaborative {
+                Section("Add Media") {
+                    PhotosPicker(selection: $pickerItems, maxSelectionCount: 10, matching: .any(of: [.images, .videos])) {
+                        HStack {
+                            Image(systemName: "photo.on.rectangle")
+                            Text("Select Photos/Videos")
+                        }
                     }
-                }
-                .onChange(of: pickerItems) { newItems in
-                    Task {
-                        for itemProvider in newItems {
-                            if let data = try? await itemProvider.loadTransferable(type: Data.self), let utType = itemProvider.supportedContentTypes.first {
-                                let ext = utType.preferredFilenameExtension ?? "dat"
-                                if let filename = try? storage.saveMedia(data: data, fileExtension: ext) {
-                                    let type: MediaItem.MediaType = utType.conforms(to: .movie) ? .video : .image
-                                    item.media.append(MediaItem(type: type, filename: filename))
+                    .onChange(of: pickerItems) { newItems in
+                        Task {
+                            for itemProvider in newItems {
+                                if let data = try? await itemProvider.loadTransferable(type: Data.self), let utType = itemProvider.supportedContentTypes.first {
+                                    let ext = utType.preferredFilenameExtension ?? "dat"
+                                    if let filename = try? storage.saveMedia(data: data, fileExtension: ext) {
+                                        let type: MediaItem.MediaType = utType.conforms(to: .movie) ? .video : .image
+                                        item.media.append(MediaItem(type: type, filename: filename))
+                                    }
                                 }
                             }
+                            pickerItems.removeAll()
+                            onUpdate(item)
                         }
-                        pickerItems.removeAll()
-                        onUpdate(item)
                     }
                 }
-            }
-            Section("Media") {
-                if item.media.isEmpty {
-                    Text("No media yet")
+                
+                Section("Media") {
+                    if item.media.isEmpty {
+                        Text("No media yet")
+                            .foregroundColor(.secondary)
+                    } else {
+                        ForEach(item.media) { media in
+                            MediaRowView(media: media, storage: storage)
+                        }
+                        .onDelete { offsets in
+                            item.media.remove(atOffsets: offsets)
+                            onUpdate(item)
+                        }
+                    }
+                }
+            } else {
+                Section("Media") {
+                    Text("Media is not available for collaborative lists")
+                        .font(.caption)
                         .foregroundColor(.secondary)
-                } else {
-                    ForEach(item.media) { media in
-                        MediaRowView(media: media, storage: storage)
-                    }
-                    .onDelete { offsets in
-                        item.media.remove(atOffsets: offsets)
-                        onUpdate(item)
-                    }
                 }
             }
         }
@@ -93,5 +103,5 @@ struct ItemDetailView: View {
 }
 
 #Preview {
-    ItemDetailView(listId: UUID(), item: RankleItem(title: "Sample")) { _ in }
+    ItemDetailView(listId: UUID(), item: RankleItem(title: "Sample"), onUpdate: { _ in }, isCollaborative: false)
 }

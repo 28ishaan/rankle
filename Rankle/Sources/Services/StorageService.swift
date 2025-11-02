@@ -85,7 +85,13 @@ final class StorageService {
             }
         }
         let sortedIds = itemIds.sorted { (a, b) -> Bool in
-            (scores[a] ?? 0) > (scores[b] ?? 0)
+            let scoreA = scores[a] ?? 0
+            let scoreB = scores[b] ?? 0
+            if scoreA != scoreB {
+                return scoreA > scoreB
+            }
+            // Tie-breaker: use UUID comparison for deterministic ordering when scores are equal
+            return a.uuidString < b.uuidString
         }
         return sortedIds.compactMap { itemIdToItem[$0] }
     }

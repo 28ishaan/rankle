@@ -59,7 +59,10 @@ struct HomeView: View {
                             }
                             .listRowBackground(Color.clear)
                         }
-                        .onDelete(perform: viewModel.deleteList)
+                        .onDelete { offsets in
+                            // Only allow deletion if user is owner for collaborative lists
+                            viewModel.deleteList(at: offsets)
+                        }
                     }
                     .scrollContentBackground(.hidden)
                 }
