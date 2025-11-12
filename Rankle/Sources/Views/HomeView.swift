@@ -105,9 +105,14 @@ struct HomeView: View {
                 }
             }
             .sheet(isPresented: $isPresentingCreate) {
-                CreateListView { name, items, color, isCollaborative in
-                    viewModel.createList(name: name, items: items, color: color, isCollaborative: isCollaborative)
-                }
+                CreateListView(
+                    onCreate: { name, items, color, isCollaborative in
+                        viewModel.createList(name: name, items: items, color: color, isCollaborative: isCollaborative)
+                    },
+                    onCreateWithItems: { name, items, color, isCollaborative in
+                        viewModel.createListWithItems(name: name, items: items, color: color, isCollaborative: isCollaborative)
+                    }
+                )
             }
         }
     }

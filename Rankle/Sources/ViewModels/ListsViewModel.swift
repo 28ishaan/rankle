@@ -58,6 +58,37 @@ final class ListsViewModel: ObservableObject {
             }
         }
     }
+    
+    func createListWithItems(name: String, items: [RankleItem], color: Color = .cyan, isCollaborative: Bool = false) {
+        // Remove media from items if creating a collaborative list (CloudKit doesn't support media)
+        let processedItems = isCollaborative ? items.map { item in
+            var updatedItem = item
+            updatedItem.media.removeAll()
+            return updatedItem
+        } : items
+        
+        var newList = RankleList(name: name, items: processedItems, isCollaborative: isCollaborative)
+        newList.color = color
+        newList.ownerId = UserService.shared.currentUserId
+        lists.append(newList)
+        persist()
+        
+        // Save to CloudKit if collaborative
+        if isCollaborative {
+            Task {
+                do {
+                    try await cloudKit.saveList(newList)
+                    // Subscribe to changes
+                    _ = try await cloudKit.subscribeToListChanges(listId: newList.id)
+                    _ = try await cloudKit.subscribeToContributionChanges(listId: newList.id)
+                } catch {
+                    #if DEBUG
+                    print("CloudKit save error: \(error)")
+                    #endif
+                }
+            }
+        }
+    }
 
     func deleteList(at offsets: IndexSet) {
         // Only allow deleting collaborative lists if current user is owner
