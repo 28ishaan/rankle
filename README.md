@@ -18,8 +18,10 @@ Rankle helps you rank your favorites through simple pairwise comparisons. Whethe
 - **Binary Insertion**: Uses smart algorithms to minimize comparisons and find the perfect spot for each item
 
 ### Media Support
+- **Images as Items**: Add images directly as list items (not just text)
 - **Attach Photos & Videos**: Add media to any item in your list
 - **Media Carousel**: Swipe through multiple photos/videos during ranking matchups
+- **Full-Screen Matchups**: Enhanced matchup interface with top-vs-bottom layout for better image viewing
 
 ### Collaborative Lists
 - **Share & Collaborate**: Create collaborative lists and share them with others
@@ -54,7 +56,8 @@ Rankle helps you rank your favorites through simple pairwise comparisons. Whethe
 ### Managing Items
 - **Edit**: Tap any item to add media or manage details
 - **Delete**: Swipe left on an item or tap Edit to delete multiple items
-- **Reorder**: Use **Rank Items** to completely reorder your list
+- **Manual Reorder**: Drag and drop items to reorder without going through matchups
+- **Rank Items**: Use the ranking process to completely reorder your list via matchups
 
 ## Privacy
 

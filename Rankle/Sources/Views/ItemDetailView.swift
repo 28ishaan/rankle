@@ -48,29 +48,45 @@ struct ItemDetailView: View {
     @State private var pickerItems: [PhotosPickerItem] = []
     private let storage = StorageService()
 
+    private var hasImage: Bool {
+        item.media.contains { $0.type == .image }
+    }
+    
     var body: some View {
         List {
             if !isCollaborative {
                 Section("Add Media") {
-                    PhotosPicker(selection: $pickerItems, maxSelectionCount: 10, matching: .any(of: [.images, .videos])) {
-                        HStack {
-                            Image(systemName: "photo.on.rectangle")
-                            Text("Select Photos/Videos")
+                    if hasImage {
+                        Text("This item already has an image. Only one image per item is allowed.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else {
+                        PhotosPicker(selection: $pickerItems, maxSelectionCount: 1, matching: .images) {
+                            HStack {
+                                Image(systemName: "photo.on.rectangle")
+                                Text("Add Image")
+                            }
                         }
-                    }
-                    .onChange(of: pickerItems) { newItems in
-                        Task {
-                            for itemProvider in newItems {
-                                if let data = try? await itemProvider.loadTransferable(type: Data.self), let utType = itemProvider.supportedContentTypes.first {
-                                    let ext = utType.preferredFilenameExtension ?? "dat"
-                                    if let filename = try? storage.saveMedia(data: data, fileExtension: ext) {
-                                        let type: MediaItem.MediaType = utType.conforms(to: .movie) ? .video : .image
-                                        item.media.append(MediaItem(type: type, filename: filename))
+                        .onChange(of: pickerItems) { newItems in
+                            Task {
+                                // Only process the first item (maxSelectionCount is 1)
+                                if let itemProvider = newItems.first {
+                                    if let data = try? await itemProvider.loadTransferable(type: Data.self),
+                                       let utType = itemProvider.supportedContentTypes.first {
+                                        let ext = utType.preferredFilenameExtension ?? "jpg"
+                                        if let filename = try? storage.saveMedia(data: data, fileExtension: ext) {
+                                            // Only one image allowed - replace if exists, otherwise append
+                                            if let existingImageIndex = item.media.firstIndex(where: { $0.type == .image }) {
+                                                item.media[existingImageIndex] = MediaItem(type: .image, filename: filename)
+                                            } else {
+                                                item.media.append(MediaItem(type: .image, filename: filename))
+                                            }
+                                            onUpdate(item)
+                                        }
                                     }
                                 }
+                                pickerItems.removeAll()
                             }
-                            pickerItems.removeAll()
-                            onUpdate(item)
                         }
                     }
                 }
@@ -98,7 +114,7 @@ struct ItemDetailView: View {
             }
         }
         .listRowBackground(Color.clear)
-        .navigationTitle(item.title)
+        .navigationTitle(item.title.isEmpty && !item.media.isEmpty ? "Image" : item.title)
     }
 }
 
