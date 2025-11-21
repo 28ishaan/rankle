@@ -15,18 +15,21 @@ struct CreateListView: View {
 
     var onCreate: (String, [String], Color, Bool) -> Void
     var onCreateWithItems: ((String, [RankleItem], Color, Bool) -> Void)?
+    var isTierList: Bool = false
 
     var body: some View {
         NavigationStack {
             Form {
                 Section("List Name") {
-                    TextField("e.g., Favorite Movies", text: $name)
+                    TextField(isTierList ? "e.g., Favorite Games" : "e.g., Favorite Movies", text: $name)
                 }
                 Section("Icon Color") {
                     ColorPicker("Color", selection: $selectedColor, supportsOpacity: false)
                 }
-                Section("Collaboration") {
-                    Toggle("Create as collaborative list", isOn: $isCollaborative)
+                if !isTierList {
+                    Section("Collaboration") {
+                        Toggle("Create as collaborative list", isOn: $isCollaborative)
+                    }
                 }
                 Section("Add Items") {
                     HStack {
@@ -140,7 +143,7 @@ struct CreateListView: View {
                     }
                 }
             }
-            .navigationTitle("New List")
+            .navigationTitle(isTierList ? "New Tier List" : "New List")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

@@ -6,6 +6,7 @@ struct HomeView: View {
     @Environment(\.colorScheme) var colorScheme
 
     @State private var isPresentingCreate = false
+    @State private var isPresentingCreateTier = false
 
     var body: some View {
         NavigationStack {
@@ -32,9 +33,7 @@ struct HomeView: View {
                 } else {
                     List {
                         ForEach(viewModel.lists) { list in
-                            NavigationLink(destination: ListDetailView(list: list, onUpdate: { updated in
-                                viewModel.replaceList(updated)
-                            }, listsViewModel: viewModel)) {
+                            NavigationLink(destination: destinationView(for: list)) {
                                 HStack(spacing: 12) {
                                     Circle()
                                         .fill(list.color)
@@ -42,6 +41,18 @@ struct HomeView: View {
                                     Text(list.name)
                                         .font(.system(.headline, design: .rounded))
                                         .foregroundColor(.primary)
+                                    if list.listType == .tier {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "square.grid.3x3.fill")
+                                            Text("Tier List")
+                                                .font(.caption)
+                                        }
+                                        .foregroundColor(.secondary)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(.thinMaterial)
+                                        .clipShape(Capsule())
+                                    }
                                     if list.isCollaborative {
                                         HStack(spacing: 4) {
                                             Image(systemName: "person.2.fill")
@@ -96,8 +107,17 @@ struct HomeView: View {
                     }
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        isPresentingCreate = true
+                    Menu {
+                        Button {
+                            isPresentingCreate = true
+                        } label: {
+                            Label("Regular List", systemImage: "list.bullet")
+                        }
+                        Button {
+                            isPresentingCreateTier = true
+                        } label: {
+                            Label("Tier List", systemImage: "square.grid.3x3")
+                        }
                     } label: {
                         Image(systemName: "plus")
                             .foregroundColor(Color.themePrimary(colorScheme))
@@ -111,9 +131,34 @@ struct HomeView: View {
                     },
                     onCreateWithItems: { name, items, color, isCollaborative in
                         viewModel.createListWithItems(name: name, items: items, color: color, isCollaborative: isCollaborative)
-                    }
+                    },
+                    isTierList: false
                 )
             }
+            .sheet(isPresented: $isPresentingCreateTier) {
+                CreateListView(
+                    onCreate: { name, items, color, isCollaborative in
+                        viewModel.createTierList(name: name, items: items, color: color, isCollaborative: isCollaborative)
+                    },
+                    onCreateWithItems: { name, items, color, isCollaborative in
+                        viewModel.createTierListWithItems(name: name, items: items, color: color, isCollaborative: isCollaborative)
+                    },
+                    isTierList: true
+                )
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func destinationView(for list: RankleList) -> some View {
+        if list.listType == .tier {
+            TierListView(list: list, onUpdate: { updated in
+                viewModel.replaceList(updated)
+            }, listsViewModel: viewModel)
+        } else {
+            ListDetailView(list: list, onUpdate: { updated in
+                viewModel.replaceList(updated)
+            }, listsViewModel: viewModel)
         }
     }
 }

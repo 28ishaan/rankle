@@ -35,18 +35,35 @@ struct RankleList: Identifiable, Codable {
     var isCollaborative: Bool = false
     var ownerId: UUID = UUID()
     var collaborators: [CollaboratorRanking] = []
+    // List type
+    var listType: ListType = .regular
+    // Tier assignments: maps item ID to tier letter (only for tier lists)
+    var tierAssignments: [UUID: String] = [:]
 
-    init(id: UUID = UUID(), name: String, items: [RankleItem] = [], color: Color = .cyan, isCollaborative: Bool = false) {
+    init(id: UUID = UUID(), name: String, items: [RankleItem] = [], color: Color = .cyan, isCollaborative: Bool = false, listType: ListType = .regular) {
         self.id = id
         self.name = name
         self.items = items
         self.colorRGBA = RGBAColor(color: color)
         self.isCollaborative = isCollaborative
+        self.listType = listType
     }
 
     var color: Color {
         get { colorRGBA.color }
         set { colorRGBA = RGBAColor(color: newValue) }
+    }
+    
+    // Get items in a specific tier (for tier lists)
+    func itemsInTier(_ tier: Tier) -> [RankleItem] {
+        guard listType == .tier else { return [] }
+        return items.filter { tierAssignments[$0.id] == tier.rawValue }
+    }
+    
+    // Get unassigned items (for tier lists)
+    var unassignedItems: [RankleItem] {
+        guard listType == .tier else { return [] }
+        return items.filter { tierAssignments[$0.id] == nil }
     }
 }
 
@@ -101,4 +118,33 @@ struct Matchup: Codable, Hashable {
 enum MatchupChoice: String, Codable {
     case left
     case right
+}
+
+enum ListType: String, Codable {
+    case regular
+    case tier
+}
+
+enum Tier: String, Codable, CaseIterable, Identifiable {
+    case s = "S"
+    case a = "A"
+    case b = "B"
+    case c = "C"
+    case d = "D"
+    case f = "F"
+    
+    var id: String { rawValue }
+    
+    var displayName: String { rawValue }
+    
+    var color: Color {
+        switch self {
+        case .s: return .purple
+        case .a: return .red
+        case .b: return .orange
+        case .c: return .yellow
+        case .d: return .green
+        case .f: return .gray
+        }
+    }
 }
