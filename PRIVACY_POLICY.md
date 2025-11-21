@@ -1,6 +1,6 @@
 # Privacy Policy for Rankle
 
-**Last Updated:** January 2025
+**Last Updated:** November 2025
 
 ## Introduction
 

@@ -11,11 +11,18 @@ Rankle helps you rank your favorites through simple pairwise comparisons. Whethe
 ### Create Custom Lists
 - **Named Lists**: Create lists with custom names and icon colors
 - **Batch Add**: Enter multiple items at once using comma-separated values (e.g., "Item A, Item B, Item C")
+- **List Types**: Choose between regular ranking lists or tier lists (S, A, B, C, D, F)
 
 ### Intelligent Ranking
 - **Add & Rank**: Add new items to existing lists and rank them efficiently without disrupting your current order
 - **Full Re-Rank**: Refresh your entire list ranking when preferences change
 - **Binary Insertion**: Uses smart algorithms to minimize comparisons and find the perfect spot for each item
+
+### Tier Lists
+- **Drag & Drop Organization**: Organize items by dragging them into tiers (S, A, B, C, D, F)
+- **Visual Tier System**: Color-coded tiers make it easy to categorize your items
+- **Unassigned Items**: Start with all items unassigned and organize them at your own pace
+- **No Matchups Required**: Skip the ranking process and organize items directly into tiers
 
 ### Media Support
 - **Images as Items**: Add images directly as list items (not just text)
@@ -27,6 +34,7 @@ Rankle helps you rank your favorites through simple pairwise comparisons. Whethe
 - **Share & Collaborate**: Create collaborative lists and share them with others
 - **Real-time Sync**: See collaborator rankings update in real-time via iCloud/CloudKit
 - **Aggregated Rankings**: View combined rankings from all contributors
+- **Note**: Tier lists are not available for collaboration (regular lists only)
 
 ### Privacy First
 - **Local Storage**: Non-collaborative lists stay on your device - no cloud, no tracking, no data collection
@@ -37,9 +45,10 @@ Rankle helps you rank your favorites through simple pairwise comparisons. Whethe
 
 ### Creating a List
 1. Tap the **+** button on the home screen
-2. Enter a list name and choose an icon color
-3. Add initial items (one per line or comma-separated)
-4. Tap **Create** to start ranking
+2. Choose **Regular List** or **Tier List**
+3. Enter a list name and choose an icon color
+4. Add initial items (one per line or comma-separated)
+5. Tap **Create** to start ranking (regular lists) or organizing (tier lists)
 
 ### Adding Items to an Existing List
 1. Open your list
@@ -56,8 +65,9 @@ Rankle helps you rank your favorites through simple pairwise comparisons. Whethe
 ### Managing Items
 - **Edit**: Tap any item to add media or manage details
 - **Delete**: Swipe left on an item or tap Edit to delete multiple items
-- **Manual Reorder**: Drag and drop items to reorder without going through matchups
-- **Rank Items**: Use the ranking process to completely reorder your list via matchups
+- **Manual Reorder**: Drag and drop items to reorder without going through matchups (regular lists)
+- **Rank Items**: Use the ranking process to completely reorder your list via matchups (regular lists)
+- **Tier Organization**: Drag items into tiers (S, A, B, C, D, F) to organize them (tier lists)
 
 ## Privacy
 

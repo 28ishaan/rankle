@@ -89,6 +89,28 @@ final class ListsViewModel: ObservableObject {
             }
         }
     }
+    
+    func createTierList(name: String, items: [String], color: Color = .cyan, isCollaborative: Bool = false) {
+        let rankleItems = items.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            .map { RankleItem(title: $0) }
+        var newList = RankleList(name: name, items: rankleItems, isCollaborative: false, listType: .tier)
+        newList.color = color
+        newList.ownerId = UserService.shared.currentUserId
+        // Tier lists cannot be collaborative
+        newList.isCollaborative = false
+        lists.append(newList)
+        persist()
+    }
+    
+    func createTierListWithItems(name: String, items: [RankleItem], color: Color = .cyan, isCollaborative: Bool = false) {
+        var newList = RankleList(name: name, items: items, isCollaborative: false, listType: .tier)
+        newList.color = color
+        newList.ownerId = UserService.shared.currentUserId
+        // Tier lists cannot be collaborative
+        newList.isCollaborative = false
+        lists.append(newList)
+        persist()
+    }
 
     func deleteList(at offsets: IndexSet) {
         // Only allow deleting collaborative lists if current user is owner
