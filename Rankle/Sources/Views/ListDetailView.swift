@@ -20,6 +20,10 @@ struct ListDetailView: View {
     private var currentList: RankleList {
         listsViewModel.getList(id: list.id) ?? list
     }
+    
+    private var isOwner: Bool {
+        currentList.ownerId == UserService.shared.currentUserId
+    }
 
     var body: some View {
         let freshList = currentList
@@ -27,7 +31,9 @@ struct ListDetailView: View {
         List {
             appearanceSection(freshList: freshList)
             collaborationSection(freshList: freshList)
-            addItemsSection(freshList: freshList)
+            if isOwner || !freshList.isCollaborative {
+                addItemsSection(freshList: freshList)
+            }
             if freshList.isCollaborative {
                 collaborationRankingSection(freshList: freshList)
             }
@@ -67,8 +73,11 @@ struct ListDetailView: View {
                         Image(systemName: "square.and.arrow.up")
                             .foregroundColor(.primary)
                     }
-                    EditButton()
-                        .foregroundColor(.primary)
+                    // Only show EditButton if the user can structurally edit this list
+                    if listsViewModel.canEditList(freshList) {
+                        EditButton()
+                            .foregroundColor(.primary)
+                    }
                     Button("Rank Items") { isPresentingRanker = true }
                         .foregroundColor(.primary)
                 }
@@ -80,13 +89,11 @@ struct ListDetailView: View {
             }
         }
         .onAppear {
-            // Refresh collaborative lists when view appears
             if list.isCollaborative {
                 listsViewModel.refresh()
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
-            // Refresh collaborative lists when app comes to foreground
             if list.isCollaborative {
                 listsViewModel.refresh()
             }
@@ -105,7 +112,6 @@ struct ListDetailView: View {
         .sheet(isPresented: $isPresentingRanker) {
             RankingView(list: freshList) { updated in
                 self.list = updated
-                // If this is a collaborative list, save as collaborator contribution
                 if updated.isCollaborative {
                     let ranking = CollaboratorRanking(
                         userId: UserService.shared.currentUserId,
@@ -128,7 +134,6 @@ struct ListDetailView: View {
                 updated.items = updatedItems
                 newItemTitle = ""
                 newImageItems.removeAll()
-                // If this is a collaborative list, save as collaborator contribution
                 if updated.isCollaborative {
                     let ranking = CollaboratorRanking(
                         userId: UserService.shared.currentUserId,
@@ -152,11 +157,22 @@ struct ListDetailView: View {
                 Circle()
                     .fill(freshList.color)
                     .frame(width: 24, height: 24)
-                ColorPicker("Icon Color", selection: Binding(get: { freshList.color }, set: { newColor in
-                    var updated = freshList
-                    updated.color = newColor
-                    onUpdate(updated)
-                }), supportsOpacity: false)
+                if listsViewModel.canEditList(freshList) {
+                    ColorPicker("Icon Color", selection: Binding(
+                        get: { freshList.color },
+                        set: { newColor in
+                            var updated = freshList
+                            updated.color = newColor
+                            onUpdate(updated)
+                        }
+                    ), supportsOpacity: false)
+                } else {
+                    Text("Icon Color")
+                    Spacer()
+                    Text(freshList.color.description)
+                        .foregroundColor(.secondary)
+                        .font(.caption)
+                }
             }
         }
         .listRowBackground(Color.themeRowBackground(colorScheme))
@@ -164,31 +180,32 @@ struct ListDetailView: View {
     
     private func collaborationSection(freshList: RankleList) -> some View {
         Section("Collaboration") {
-            let isOwner = freshList.ownerId == UserService.shared.currentUserId
+            let isOwnerOfThisList = freshList.ownerId == UserService.shared.currentUserId
+            // Route through setCollaborative so that:
+            //   enable  → media is stripped, CloudKit record saved, subscriptions registered
+            //   disable → collaborators cleared, CloudKit record updated to non-collaborative
             Toggle("Collaborative list", isOn: Binding(get: { freshList.isCollaborative }, set: { value in
-                // Only allow changes if user is owner
-                guard isOwner else { return }
-                
-                var updated = freshList
-                if value {
-                    // Turning ON: set owner to current user if not already
-                    if !updated.isCollaborative {
-                        updated.ownerId = UserService.shared.currentUserId
-                    }
-                    updated.isCollaborative = true
-                    onUpdate(updated)
-                } else {
-                    // Turning OFF: only owner can do this
-                    updated.isCollaborative = false
-                    updated.collaborators.removeAll()
-                    onUpdate(updated)
-                }
+                guard isOwnerOfThisList else { return }
+                listsViewModel.setCollaborative(value, for: freshList.id)
             }))
-            .disabled(!isOwner)
-            if !isOwner {
-                Text(freshList.isCollaborative 
-                     ? "Only the owner can change collaboration settings."
-                     : "Only the owner can enable collaboration.")
+            .disabled(!isOwnerOfThisList)
+            
+            if freshList.isCollaborative && !isOwnerOfThisList {
+                HStack(spacing: 8) {
+                    Image(systemName: "person.fill.checkmark")
+                        .foregroundColor(.secondary)
+                    Text("You're collaborating on this list. Tap \"Rank Items\" to submit your ranking.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            } else if !isOwnerOfThisList {
+                Text("Only the owner can enable collaboration.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            if freshList.isCollaborative && isOwnerOfThisList {
+                Text("\(freshList.collaborators.count) collaborator\(freshList.collaborators.count == 1 ? "" : "s") have submitted rankings.")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -279,18 +296,27 @@ struct ListDetailView: View {
     private func collaborationRankingSection(freshList: RankleList) -> some View {
         Section("Overall Collaboration Ranking") {
             let aggregated = listsViewModel.getAggregateRanking(for: freshList)
-            ForEach(Array(aggregated.enumerated()), id: \.element.id) { index, item in
-                HStack {
-                    Text("\(index + 1).")
-                        .foregroundColor(.secondary)
-                    Text(item.title)
+            if aggregated.isEmpty || freshList.collaborators.isEmpty {
+                Text("No rankings submitted yet.")
+                    .foregroundColor(.secondary)
+                    .font(.callout)
+            } else {
+                ForEach(Array(aggregated.enumerated()), id: \.element.id) { index, item in
+                    HStack {
+                        Text("\(index + 1).")
+                            .foregroundColor(.secondary)
+                        Text(item.title)
+                    }
                 }
             }
         }
+        .listRowBackground(Color.themeRowBackground(colorScheme))
     }
     
     private func rankedItemsSection(freshList: RankleList) -> some View {
-        Section("Ranked Items") {
+        let canEdit = listsViewModel.canEditList(freshList)
+        
+        return Section(freshList.isCollaborative ? "Items" : "Ranked Items") {
             if freshList.items.isEmpty {
                 Text("No items yet")
                     .foregroundColor(.secondary)
@@ -300,12 +326,12 @@ struct ListDetailView: View {
                         itemRowView(index: index, item: item)
                     }
                 }
-                .onDelete { offsets in
+                .onDelete(perform: canEdit ? { offsets in
                     handleDelete(offsets: offsets, freshList: freshList)
-                }
-                .onMove { source, destination in
+                } : nil)
+                .onMove(perform: canEdit ? { source, destination in
                     handleMove(from: source, to: destination, freshList: freshList)
-                }
+                } : nil)
             }
         }
         .listRowBackground(Color.themeRowBackground(colorScheme))
@@ -326,7 +352,6 @@ struct ListDetailView: View {
             Text("\(index + 1).")
                 .foregroundColor(.secondary)
             
-            // Show image thumbnail if item has an image
             if let firstMedia = item.media.first,
                firstMedia.type == .image,
                let uiImage = UIImage(contentsOfFile: StorageService().urlForMedia(filename: firstMedia.filename).path) {
@@ -337,7 +362,6 @@ struct ListDetailView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 6))
             }
             
-            // Show title or "Image" for image-only items
             Text(item.title.isEmpty && !item.media.isEmpty ? "Image" : item.title)
         }
     }
@@ -346,14 +370,14 @@ struct ListDetailView: View {
     // MARK: - Helper Methods
     
     private func handleDelete(offsets: IndexSet, freshList: RankleList) {
+        // Guard: only owner can delete items from a collaborative list
+        guard listsViewModel.canEditList(freshList) else { return }
+        
         var updated = freshList
         updated.items.remove(atOffsets: offsets)
-        
-        // Update local state immediately
         self.list = updated
         
         if updated.isCollaborative {
-            // For collaborative lists, save as contribution
             let ranking = CollaboratorRanking(
                 userId: UserService.shared.currentUserId,
                 displayName: nil,
@@ -361,20 +385,22 @@ struct ListDetailView: View {
                 updatedAt: Date()
             )
             listsViewModel.upsertContribution(listId: updated.id, ranking: ranking)
+            // Also push the updated item list to CloudKit so collaborators see the removal
+            listsViewModel.replaceList(updated)
         } else {
             onUpdate(updated)
         }
     }
     
     private func handleMove(from source: IndexSet, to destination: Int, freshList: RankleList) {
+        // Guard: only owner can manually reorder items on a collaborative list
+        guard listsViewModel.canEditList(freshList) else { return }
+        
         var updated = freshList
         updated.items.move(fromOffsets: source, toOffset: destination)
-        
-        // Update local state immediately
         self.list = updated
         
         if updated.isCollaborative {
-            // For collaborative lists, save as contribution
             let ranking = CollaboratorRanking(
                 userId: UserService.shared.currentUserId,
                 displayName: nil,
@@ -390,8 +416,7 @@ struct ListDetailView: View {
     private func refreshList() async {
         isRefreshing = true
         listsViewModel.refresh()
-        // Small delay to show refresh animation
-        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+        try? await Task.sleep(nanoseconds: 500_000_000)
         if let updated = listsViewModel.getList(id: list.id) {
             self.list = updated
         }

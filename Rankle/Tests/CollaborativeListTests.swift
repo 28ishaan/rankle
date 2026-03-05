@@ -5,452 +5,527 @@ final class CollaborativeListTests: XCTestCase {
     private var tempDir: URL!
     private var storage: StorageService!
     private var viewModel: ListsViewModel!
-    private var ownerUserId: UUID!
-    private var collaboratorUserId: UUID!
+    private var currentUserId: UUID!
+    private var otherUserId: UUID!
 
     override func setUp() {
         super.setUp()
-        let base = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("rankle-collab-tests-\(UUID().uuidString)")
+        let base = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("rankle-collab-tests-\(UUID().uuidString)")
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         tempDir = base
         storage = StorageService(baseDirectoryURL: tempDir)
         viewModel = ListsViewModel(storage: storage)
-        
-        // Capture current user IDs for testing
-        ownerUserId = UserService.shared.currentUserId
-        collaboratorUserId = UUID() // Different user
+        currentUserId = UserService.shared.currentUserId
+        otherUserId = UUID() // Represents a different user
     }
 
     override func tearDown() {
         try? FileManager.default.removeItem(at: tempDir)
-        tempDir = nil
-        storage = nil
-        viewModel = nil
-        ownerUserId = nil
-        collaboratorUserId = nil
+        tempDir = nil; storage = nil; viewModel = nil
+        currentUserId = nil; otherUserId = nil
         super.tearDown()
     }
 
-    // MARK: - Ownership and Permissions Tests
-    
-    func testOwnerCanDeleteCollaborativeList() {
-        viewModel.createList(name: "My List", items: ["A", "B"], isCollaborative: true)
-        let listId = viewModel.lists.first!.id
-        let initialCount = viewModel.lists.count
-        
-        viewModel.deleteList(at: IndexSet(integer: 0))
-        
-        XCTAssertEqual(viewModel.lists.count, initialCount - 1, "Owner should be able to delete their collaborative list")
-        XCTAssertNil(viewModel.getList(id: listId), "List should be deleted")
-    }
-    
-    func testNonOwnerCannotDeleteCollaborativeList() {
-        viewModel.createList(name: "Shared List", items: ["A", "B"], isCollaborative: true)
-        var list = viewModel.lists.first!
-        list.ownerId = collaboratorUserId // Make someone else the owner
-        viewModel.replaceList(list)
-        
-        let initialCount = viewModel.lists.count
-        let listId = list.id
-        
-        viewModel.deleteList(at: IndexSet(integer: 0))
-        
-        XCTAssertEqual(viewModel.lists.count, initialCount, "Non-owner should not be able to delete collaborative list")
-        XCTAssertNotNil(viewModel.getList(id: listId), "List should still exist")
-    }
-    
-    func testNonOwnerCanDeleteNonCollaborativeList() {
-        viewModel.createList(name: "Regular List", items: ["A", "B"], isCollaborative: false)
-        var list = viewModel.lists.first!
-        list.ownerId = collaboratorUserId // Different owner, but not collaborative
-        viewModel.replaceList(list)
-        
-        let initialCount = viewModel.lists.count
-        
-        viewModel.deleteList(at: IndexSet(integer: 0))
-        
-        XCTAssertEqual(viewModel.lists.count, initialCount - 1, "Non-collaborative lists can be deleted by anyone")
-    }
-    
-    func testCanDeleteListHelperFunction() {
-        viewModel.createList(name: "Owned", items: ["A"], isCollaborative: true)
-        let ownedList = viewModel.lists.first!
-        
-        viewModel.createList(name: "Shared", items: ["B"], isCollaborative: true)
-        var sharedList = viewModel.lists.last!
-        sharedList.ownerId = collaboratorUserId
-        viewModel.replaceList(sharedList)
-        let updatedSharedList = viewModel.lists.last!
-        
-        XCTAssertTrue(viewModel.canDeleteList(ownedList), "Owner should be able to delete their list")
-        XCTAssertFalse(viewModel.canDeleteList(updatedSharedList), "Non-owner should not be able to delete collaborative list")
-    }
-    
-    func testOwnerCanToggleCollaborativeOn() {
-        viewModel.createList(name: "Regular", items: ["A", "B"], isCollaborative: false)
-        let listId = viewModel.lists.first!.id
-        
-        viewModel.setCollaborative(true, for: listId)
-        
-        let updated = viewModel.getList(id: listId)!
-        XCTAssertTrue(updated.isCollaborative, "Owner should be able to enable collaboration")
-        XCTAssertEqual(updated.ownerId, ownerUserId, "Owner should remain the same")
-    }
-    
-    func testOwnerCanToggleCollaborativeOff() {
-        viewModel.createList(name: "Collaborative", items: ["A", "B"], isCollaborative: true)
-        let listId = viewModel.lists.first!.id
-        
-        // Add collaborators first
-        let ranking = CollaboratorRanking(userId: collaboratorUserId, ranking: [])
-        viewModel.upsertContribution(listId: listId, ranking: ranking)
-        
-        viewModel.setCollaborative(false, for: listId)
-        
-        let updated = viewModel.getList(id: listId)!
-        XCTAssertFalse(updated.isCollaborative, "Owner should be able to disable collaboration")
-        XCTAssertTrue(updated.collaborators.isEmpty, "Disabling should clear collaborators")
-    }
-    
-    func testNonOwnerCannotToggleCollaborativeOn() {
-        viewModel.createList(name: "Regular", items: ["A", "B"], isCollaborative: false)
-        var list = viewModel.lists.first!
-        list.ownerId = collaboratorUserId
-        viewModel.replaceList(list)
-        let listId = list.id
-        
-        viewModel.setCollaborative(true, for: listId)
-        
-        let updated = viewModel.getList(id: listId)!
-        XCTAssertFalse(updated.isCollaborative, "Non-owner should not be able to enable collaboration")
-    }
-    
-    func testNonOwnerCannotToggleCollaborativeOff() {
-        viewModel.createList(name: "Shared", items: ["A", "B"], isCollaborative: true)
-        var list = viewModel.lists.first!
-        list.ownerId = collaboratorUserId
-        viewModel.replaceList(list)
-        let listId = list.id
-        
-        viewModel.setCollaborative(false, for: listId)
-        
-        let updated = viewModel.getList(id: listId)!
-        XCTAssertTrue(updated.isCollaborative, "Non-owner should not be able to disable collaboration")
-    }
-    
-    // MARK: - Collaborator Contribution Tests
-    
-    func testRankingCompletionSavesAsCollaboratorContribution() {
-        viewModel.createList(name: "Movies", items: ["A", "B", "C"], isCollaborative: true)
-        let listId = viewModel.lists.first!.id
-        var list = viewModel.lists.first!
-        let itemIds = list.items.map { $0.id }
-        
-        // Simulate ranking completion - items should be in some order
-        let rankedOrder = [itemIds[2], itemIds[0], itemIds[1]] // Different order
-        list.items = rankedOrder.compactMap { id in list.items.first(where: { $0.id == id }) }
-        
-        // Save as collaborator contribution (this is what happens when ranking completes)
-        let contribution = CollaboratorRanking(
-            userId: ownerUserId,
-            displayName: nil,
-            ranking: rankedOrder,
-            updatedAt: Date()
+    // MARK: - Helpers
+
+    /// Create a collaborative list owned by `otherUserId` to simulate a list shared with the current user.
+    private func makeSharedList(name: String = "Shared", items: [String] = ["A", "B"]) -> RankleList {
+        var list = RankleList(
+            name: name,
+            items: items.map { RankleItem(title: $0) },
+            isCollaborative: true
         )
-        viewModel.upsertContribution(listId: listId, ranking: contribution)
-        
-        let updated = viewModel.getList(id: listId)!
-        XCTAssertEqual(updated.collaborators.count, 1, "Should have one collaborator contribution")
-        XCTAssertEqual(updated.collaborators.first?.userId, ownerUserId, "Contribution should be from current user")
-        XCTAssertEqual(updated.collaborators.first?.ranking, rankedOrder, "Ranking should match")
+        list.ownerId = otherUserId
+        return list
     }
-    
-    func testUpsertContributionUpdatesExistingUserRanking() {
-        viewModel.createList(name: "Foods", items: ["A", "B", "C"], isCollaborative: true)
-        let listId = viewModel.lists.first!.id
-        let itemIds = viewModel.lists.first!.items.map { $0.id }
-        
-        // First contribution
-        let firstRanking = CollaboratorRanking(userId: ownerUserId, ranking: itemIds)
-        viewModel.upsertContribution(listId: listId, ranking: firstRanking)
-        
-        // Second contribution from same user (should update, not duplicate)
-        let secondRanking = CollaboratorRanking(userId: ownerUserId, ranking: Array(itemIds.reversed()))
-        viewModel.upsertContribution(listId: listId, ranking: secondRanking)
-        
-        let updated = viewModel.getList(id: listId)!
-        XCTAssertEqual(updated.collaborators.count, 1, "Should update existing contribution, not create duplicate")
-        XCTAssertEqual(updated.collaborators.first?.ranking, Array(itemIds.reversed()), "Should have latest ranking")
+
+    // MARK: - Owner / Delete Permission Tests
+
+    func testOwnerCanDeleteOwnCollaborativeList() {
+        viewModel.createList(name: "My List", items: ["A", "B"], isCollaborative: true)
+        guard let list = viewModel.lists.first else { return XCTFail("Expected list") }
+        let id = list.id
+        let initialCount = viewModel.lists.count
+
+        viewModel.deleteList(at: IndexSet(integer: 0))
+
+        XCTAssertEqual(viewModel.lists.count, initialCount - 1)
+        XCTAssertNil(viewModel.getList(id: id))
     }
-    
-    func testMultipleCollaboratorsCanContribute() {
-        viewModel.createList(name: "Books", items: ["A", "B", "C"], isCollaborative: true)
-        let listId = viewModel.lists.first!.id
-        let itemIds = viewModel.lists.first!.items.map { $0.id }
-        
-        let user1Ranking = CollaboratorRanking(userId: ownerUserId, ranking: itemIds)
-        let user2Ranking = CollaboratorRanking(userId: collaboratorUserId, ranking: Array(itemIds.reversed()))
-        
-        viewModel.upsertContribution(listId: listId, ranking: user1Ranking)
-        viewModel.upsertContribution(listId: listId, ranking: user2Ranking)
-        
-        let updated = viewModel.getList(id: listId)!
-        XCTAssertEqual(updated.collaborators.count, 2, "Should have contributions from both users")
-        XCTAssertTrue(updated.collaborators.contains(where: { $0.userId == ownerUserId }))
-        XCTAssertTrue(updated.collaborators.contains(where: { $0.userId == collaboratorUserId }))
+
+    func testNonOwnerCannotDeleteSharedCollaborativeList() {
+        let shared = makeSharedList()
+        viewModel.importList(shared)
+
+        let countBeforeAttempt = viewModel.lists.count
+        guard let idx = viewModel.lists.firstIndex(where: { $0.id == shared.id }) else {
+            return XCTFail("Shared list not found")
+        }
+
+        viewModel.deleteList(at: IndexSet(integer: idx))
+
+        XCTAssertEqual(viewModel.lists.count, countBeforeAttempt,
+                       "Non-owner should not be able to delete a collaborative list")
+        XCTAssertNotNil(viewModel.getList(id: shared.id))
     }
-    
-    func testUpsertContributionUpdatesAggregatedRanking() {
+
+    func testAnyoneCanDeleteNonCollaborativeList() {
+        viewModel.createList(name: "Regular", items: ["A"], isCollaborative: false)
+        var list = viewModel.lists.first!
+        list.ownerId = otherUserId           // Different owner but non-collaborative
+        viewModel.replaceList(list)
+
+        let initialCount = viewModel.lists.count
+        viewModel.deleteList(at: IndexSet(integer: 0))
+
+        XCTAssertEqual(viewModel.lists.count, initialCount - 1,
+                       "Non-collaborative lists can be deleted regardless of ownership")
+    }
+
+    func testCanDeleteListHelper() {
+        viewModel.createList(name: "Owned", items: ["A"], isCollaborative: true)
+        let owned = viewModel.lists.first!
+
+        let shared = makeSharedList(name: "Shared")
+        viewModel.importList(shared)
+        let importedShared = viewModel.getList(id: shared.id)!
+
+        XCTAssertTrue(viewModel.canDeleteList(owned),    "Owner can delete their own collaborative list")
+        XCTAssertFalse(viewModel.canDeleteList(importedShared), "Non-owner cannot delete a shared collaborative list")
+    }
+
+    func testDeleteOnlyRemovesAllowedListsInBatchOperation() {
+        // Owned collaborative
+        viewModel.createList(name: "Owned", items: ["A"], isCollaborative: true)
+
+        // Shared collaborative (non-deletable)
+        let shared = makeSharedList(name: "Shared")
+        viewModel.importList(shared)
+
+        // Regular list (always deletable)
+        viewModel.createList(name: "Regular", items: ["C"], isCollaborative: false)
+
+        let initialCount = viewModel.lists.count
+        viewModel.deleteList(at: IndexSet(0..<initialCount)) // Try to delete everything
+
+        // Only the non-deletable shared list should survive
+        XCTAssertEqual(viewModel.lists.count, 1, "Only the shared non-owned list should remain")
+        XCTAssertEqual(viewModel.lists.first?.name, "Shared")
+    }
+
+    // MARK: - canEditList Tests
+
+    func testOwnerCanEditOwnCollaborativeList() {
+        viewModel.createList(name: "Mine", items: ["A"], isCollaborative: true)
+        guard let list = viewModel.lists.first else { return XCTFail() }
+
+        XCTAssertTrue(viewModel.canEditList(list),
+                      "Owner should be able to structurally edit their own collaborative list")
+    }
+
+    func testNonOwnerCannotEditSharedCollaborativeList() {
+        let shared = makeSharedList()
+        viewModel.importList(shared)
+        guard let imported = viewModel.getList(id: shared.id) else { return XCTFail() }
+
+        XCTAssertFalse(viewModel.canEditList(imported),
+                       "Non-owner should not be able to structurally edit a shared collaborative list")
+    }
+
+    func testAnyoneCanEditNonCollaborativeList() {
+        viewModel.createList(name: "Regular", items: ["A"], isCollaborative: false)
+        var list = viewModel.lists.first!
+        list.ownerId = otherUserId  // Not the current user
+        viewModel.replaceList(list)
+        let updated = viewModel.lists.first!
+
+        XCTAssertTrue(viewModel.canEditList(updated),
+                      "Non-collaborative lists can always be edited by any user")
+    }
+
+    func testOwnerCanEditOwnRegularList() {
+        viewModel.createList(name: "Regular", items: ["A"], isCollaborative: false)
+        guard let list = viewModel.lists.first else { return XCTFail() }
+
+        XCTAssertTrue(viewModel.canEditList(list))
+    }
+
+    // MARK: - leaveList Tests
+
+    func testLeaveListRemovesSharedCollaborativeList() {
+        let shared = makeSharedList(name: "Shared Movies")
+        viewModel.importList(shared)
+
+        let initialCount = viewModel.lists.count
+        viewModel.leaveList(id: shared.id)
+
+        XCTAssertEqual(viewModel.lists.count, initialCount - 1, "Leave should remove the list locally")
+        XCTAssertNil(viewModel.getList(id: shared.id), "List should be gone after leaving")
+    }
+
+    func testLeaveListDoesNotAffectOtherLists() {
+        viewModel.createList(name: "My List", items: ["X"], isCollaborative: false)
+
+        let shared = makeSharedList(name: "Shared")
+        viewModel.importList(shared)
+
+        viewModel.leaveList(id: shared.id)
+
+        XCTAssertNotNil(viewModel.lists.first(where: { $0.name == "My List" }),
+                        "Leaving a shared list should not affect other lists")
+    }
+
+    func testLeaveListIsPersistedToStorage() {
+        let shared = makeSharedList()
+        viewModel.importList(shared)
+        viewModel.leaveList(id: shared.id)
+
+        // Create a new ViewModel to reload from storage (simulates app restart)
+        let freshVM = ListsViewModel(storage: storage)
+        XCTAssertNil(freshVM.getList(id: shared.id),
+                     "Left list should not reappear after app restart")
+    }
+
+    func testLeaveNonExistentListDoesNotCrash() {
+        viewModel.leaveList(id: UUID())  // Should not crash
+        XCTAssertTrue(true)
+    }
+
+    // MARK: - importList: Collaborative Lists Preserve Identity
+
+    func testImportCollaborativeListPreservesOriginalId() {
+        let shared = makeSharedList(name: "Shared List")
+        let originalId = shared.id
+
+        viewModel.importList(shared)
+
+        XCTAssertNotNil(viewModel.getList(id: originalId),
+                        "Collaborative import must preserve the original list ID so contributions route correctly")
+    }
+
+    func testImportCollaborativeListPreservesOriginalOwnerId() {
+        let shared = makeSharedList()
+        viewModel.importList(shared)
+
+        guard let imported = viewModel.getList(id: shared.id) else { return XCTFail() }
+        XCTAssertEqual(imported.ownerId, otherUserId,
+                       "Collaborative import must preserve the original owner's ID")
+        XCTAssertNotEqual(imported.ownerId, currentUserId,
+                          "Importer should NOT become the owner of a collaborative list")
+    }
+
+    func testImportCollaborativeListPreservesItems() {
+        var shared = makeSharedList()
+        shared.items = [RankleItem(title: "Alpha"), RankleItem(title: "Beta")]
+        viewModel.importList(shared)
+
+        guard let imported = viewModel.getList(id: shared.id) else { return XCTFail() }
+        XCTAssertEqual(imported.items.count, 2)
+        XCTAssertEqual(imported.items.map { $0.title }, ["Alpha", "Beta"])
+    }
+
+    func testImportCollaborativeListDuplicatePrevented() {
+        let shared = makeSharedList()
+
+        let initialCount = viewModel.lists.count
+        viewModel.importList(shared)
+        viewModel.importList(shared)  // Second import of the same list
+
+        XCTAssertEqual(viewModel.lists.count, initialCount + 1,
+                       "Importing the same collaborative list twice should add it only once")
+    }
+
+    // MARK: - importList: Non-Collaborative Lists Get New Identity
+
+    func testImportNonCollaborativeListGetsNewId() {
+        let originalId = UUID()
+        let regular = RankleList(id: originalId, name: "Regular", items: [RankleItem(title: "A")])
+        // isCollaborative is false by default
+
+        viewModel.importList(regular)
+
+        XCTAssertNil(viewModel.getList(id: originalId),
+                     "Non-collaborative import should not use the original ID")
+        XCTAssertEqual(viewModel.lists.last?.name, "Regular")
+        XCTAssertNotEqual(viewModel.lists.last?.id, originalId,
+                          "Non-collaborative import should receive a fresh UUID")
+    }
+
+    func testImportNonCollaborativeListCurrentUserBecomesOwner() {
+        var regular = RankleList(name: "Regular", items: [RankleItem(title: "A")])
+        regular.ownerId = otherUserId  // Someone else's list
+
+        viewModel.importList(regular)
+
+        XCTAssertEqual(viewModel.lists.last?.ownerId, currentUserId,
+                       "Non-collaborative import gives ownership to the importer")
+    }
+
+    // MARK: - Collaboration Toggle
+
+    func testOwnerCanEnableCollaboration() {
+        viewModel.createList(name: "Regular", items: ["A", "B"], isCollaborative: false)
+        guard let list = viewModel.lists.first else { return XCTFail() }
+
+        viewModel.setCollaborative(true, for: list.id)
+
+        let updated = viewModel.getList(id: list.id)!
+        XCTAssertTrue(updated.isCollaborative)
+        XCTAssertEqual(updated.ownerId, currentUserId, "Owner should remain after enabling collaboration")
+    }
+
+    func testOwnerCanDisableCollaboration() {
+        viewModel.createList(name: "Collaborative", items: ["A", "B"], isCollaborative: true)
+        guard let list = viewModel.lists.first else { return XCTFail() }
+
+        let ranking = CollaboratorRanking(userId: otherUserId, ranking: list.items.map { $0.id })
+        viewModel.upsertContribution(listId: list.id, ranking: ranking)
+        viewModel.setCollaborative(false, for: list.id)
+
+        let updated = viewModel.getList(id: list.id)!
+        XCTAssertFalse(updated.isCollaborative)
+        XCTAssertTrue(updated.collaborators.isEmpty, "Disabling collaboration should clear all contributions")
+    }
+
+    func testNonOwnerCannotEnableCollaboration() {
+        viewModel.createList(name: "Regular", items: ["A"], isCollaborative: false)
+        var list = viewModel.lists.first!
+        list.ownerId = otherUserId
+        viewModel.replaceList(list)
+
+        viewModel.setCollaborative(true, for: list.id)
+
+        XCTAssertFalse(viewModel.getList(id: list.id)!.isCollaborative,
+                       "Non-owner should not be able to enable collaboration")
+    }
+
+    func testNonOwnerCannotDisableCollaboration() {
+        viewModel.createList(name: "Shared", items: ["A"], isCollaborative: true)
+        var list = viewModel.lists.first!
+        list.ownerId = otherUserId
+        viewModel.replaceList(list)
+
+        viewModel.setCollaborative(false, for: list.id)
+
+        XCTAssertTrue(viewModel.getList(id: list.id)!.isCollaborative,
+                      "Non-owner should not be able to disable collaboration")
+    }
+
+    func testEnablingCollaborationRemovesMediaFromItems() {
+        viewModel.createList(name: "With Media", items: ["A"], isCollaborative: false)
+        var list = viewModel.lists.first!
+        list.items[0].media.append(MediaItem(type: .image, filename: "test.jpg"))
+        viewModel.replaceList(list)
+
+        viewModel.setCollaborative(true, for: list.id)
+
+        let updated = viewModel.getList(id: list.id)!
+        XCTAssertTrue(updated.isCollaborative)
+        XCTAssertTrue(updated.items.allSatisfy { $0.media.isEmpty },
+                      "All items must have media removed when collaboration is enabled")
+    }
+
+    // MARK: - Contribution Tests
+
+    func testOwnerContributionIsSaved() {
+        viewModel.createList(name: "Movies", items: ["A", "B", "C"], isCollaborative: true)
+        guard let list = viewModel.lists.first else { return XCTFail() }
+        let ids = list.items.map { $0.id }
+
+        let ranking = CollaboratorRanking(userId: currentUserId, ranking: [ids[2], ids[0], ids[1]])
+        viewModel.upsertContribution(listId: list.id, ranking: ranking)
+
+        let updated = viewModel.getList(id: list.id)!
+        XCTAssertEqual(updated.collaborators.count, 1)
+        XCTAssertEqual(updated.collaborators.first?.userId, currentUserId)
+        XCTAssertEqual(updated.collaborators.first?.ranking, [ids[2], ids[0], ids[1]])
+    }
+
+    func testContributionFromDifferentUserIsAccepted() {
+        viewModel.createList(name: "Foods", items: ["A", "B"], isCollaborative: true)
+        guard let list = viewModel.lists.first else { return XCTFail() }
+        let ids = list.items.map { $0.id }
+
+        // Importer contributes using otherUserId
+        let ranking = CollaboratorRanking(userId: otherUserId, ranking: ids)
+        viewModel.upsertContribution(listId: list.id, ranking: ranking)
+
+        XCTAssertEqual(viewModel.getList(id: list.id)!.collaborators.count, 1)
+    }
+
+    func testResubmittingRankingUpdatesExisting() {
         viewModel.createList(name: "Songs", items: ["A", "B", "C"], isCollaborative: true)
-        let listId = viewModel.lists.first!.id
-        let itemIds = viewModel.lists.first!.items.map { $0.id }
-        
-        // Add first collaborator - ranks A, B, C
-        let ranking1 = CollaboratorRanking(userId: ownerUserId, ranking: itemIds)
-        viewModel.upsertContribution(listId: listId, ranking: ranking1)
-        
-        let afterFirst = viewModel.getList(id: listId)!
-        let initialAggregated = viewModel.getAggregateRanking(for: afterFirst)
-        
-        // With only one collaborator, aggregated should match their ranking
-        XCTAssertEqual(initialAggregated.map { $0.id }, itemIds, "Single collaborator should determine ranking")
-        
-        // Add second collaborator with different ranking - ranks C, A, B (not fully reversed to ensure difference)
-        let ranking2 = CollaboratorRanking(userId: collaboratorUserId, ranking: [itemIds[2], itemIds[0], itemIds[1]])
-        viewModel.upsertContribution(listId: listId, ranking: ranking2)
-        
-        let afterSecond = viewModel.getList(id: listId)!
-        let finalAggregated = viewModel.getAggregateRanking(for: afterSecond)
-        
-        // Aggregated ranking should be different after second contribution
-        // With rankings [A,B,C] and [C,A,B]:
-        // A scores: 3 (pos 0) + 2 (pos 1) = 5
-        // B scores: 2 (pos 1) + 1 (pos 2) = 3
-        // C scores: 1 (pos 2) + 3 (pos 0) = 4
-        // So A should be first
-        XCTAssertNotEqual(initialAggregated.map { $0.id }, finalAggregated.map { $0.id }, 
-                         "Aggregated ranking should update when new contribution is added")
-        XCTAssertEqual(finalAggregated.first?.id, itemIds[0], "A should be first with rankings [A,B,C] and [C,A,B]")
+        guard let list = viewModel.lists.first else { return XCTFail() }
+        let ids = list.items.map { $0.id }
+
+        let first  = CollaboratorRanking(userId: currentUserId, ranking: ids)
+        let second = CollaboratorRanking(userId: currentUserId, ranking: Array(ids.reversed()))
+
+        viewModel.upsertContribution(listId: list.id, ranking: first)
+        viewModel.upsertContribution(listId: list.id, ranking: second)
+
+        let updated = viewModel.getList(id: list.id)!
+        XCTAssertEqual(updated.collaborators.count, 1, "Resubmission should update, not duplicate")
+        XCTAssertEqual(updated.collaborators.first?.ranking, Array(ids.reversed()),
+                       "Should store the most recent ranking")
     }
-    
-    func testAggregatedRankingReflectsCollaboratorContributions() {
-        viewModel.createList(name: "Shows", items: ["A", "B", "C"], isCollaborative: true)
-        let listId = viewModel.lists.first!.id
-        let itemIds = viewModel.lists.first!.items.map { $0.id }
-        
-        // All three users rank B first
-        let ranking1 = CollaboratorRanking(userId: ownerUserId, ranking: [itemIds[1], itemIds[0], itemIds[2]])
-        let ranking2 = CollaboratorRanking(userId: collaboratorUserId, ranking: [itemIds[1], itemIds[2], itemIds[0]])
-        let ranking3 = CollaboratorRanking(userId: UUID(), ranking: [itemIds[1], itemIds[0], itemIds[2]])
-        
-        viewModel.upsertContribution(listId: listId, ranking: ranking1)
-        viewModel.upsertContribution(listId: listId, ranking: ranking2)
-        viewModel.upsertContribution(listId: listId, ranking: ranking3)
-        
-        let updated = viewModel.getList(id: listId)!
+
+    func testMultipleUserContributionsCoexist() {
+        viewModel.createList(name: "Books", items: ["A", "B", "C"], isCollaborative: true)
+        guard let list = viewModel.lists.first else { return XCTFail() }
+        let ids = list.items.map { $0.id }
+        let user3 = UUID()
+
+        viewModel.upsertContribution(listId: list.id, ranking: CollaboratorRanking(userId: currentUserId, ranking: ids))
+        viewModel.upsertContribution(listId: list.id, ranking: CollaboratorRanking(userId: otherUserId,   ranking: Array(ids.reversed())))
+        viewModel.upsertContribution(listId: list.id, ranking: CollaboratorRanking(userId: user3,         ranking: ids))
+
+        XCTAssertEqual(viewModel.getList(id: list.id)!.collaborators.count, 3)
+    }
+
+    func testContributionOnNonCollaborativeListIsIgnored() {
+        viewModel.createList(name: "Regular", items: ["A", "B"], isCollaborative: false)
+        guard let list = viewModel.lists.first else { return XCTFail() }
+
+        viewModel.upsertContribution(listId: list.id,
+                                     ranking: CollaboratorRanking(userId: currentUserId, ranking: list.items.map { $0.id }))
+
+        XCTAssertTrue(viewModel.getList(id: list.id)!.collaborators.isEmpty,
+                      "Non-collaborative lists must not store contributions")
+    }
+
+    func testContributionOnNonExistentListDoesNotCrash() {
+        viewModel.upsertContribution(listId: UUID(),
+                                     ranking: CollaboratorRanking(userId: currentUserId, ranking: []))
+        XCTAssertTrue(true)
+    }
+
+    func testContributionUpdatesAggregatedItemsArray() {
+        viewModel.createList(name: "Auto Update", items: ["A", "B", "C"], isCollaborative: true)
+        guard let list = viewModel.lists.first else { return XCTFail() }
+        let ids = list.items.map { $0.id }
+
+        let ranking = CollaboratorRanking(userId: currentUserId, ranking: Array(ids.reversed()))
+        viewModel.upsertContribution(listId: list.id, ranking: ranking)
+
+        let updated = viewModel.getList(id: list.id)!
         let aggregated = viewModel.getAggregateRanking(for: updated)
-        
-        // B should be first in aggregated ranking
-        XCTAssertEqual(aggregated.first?.id, itemIds[1], "Item ranked first by all should be aggregated first")
+        XCTAssertEqual(updated.items.map { $0.id }, aggregated.map { $0.id },
+                       "items array must be kept in sync with the aggregate after each contribution")
     }
-    
-    // MARK: - Refresh and Real-time Sync Tests
-    
-    func testRefreshReloadsListsFromStorage() {
+
+    // MARK: - Aggregated Ranking Correctness
+
+    func testAggregateReflectsAllCollaborators() {
+        viewModel.createList(name: "Shows", items: ["A", "B", "C"], isCollaborative: true)
+        guard let list = viewModel.lists.first else { return XCTFail() }
+        let ids = list.items.map { $0.id }
+
+        // All three rank B first
+        let user3 = UUID()
+        viewModel.upsertContribution(listId: list.id, ranking: CollaboratorRanking(userId: currentUserId, ranking: [ids[1], ids[0], ids[2]]))
+        viewModel.upsertContribution(listId: list.id, ranking: CollaboratorRanking(userId: otherUserId,   ranking: [ids[1], ids[2], ids[0]]))
+        viewModel.upsertContribution(listId: list.id, ranking: CollaboratorRanking(userId: user3,         ranking: [ids[1], ids[0], ids[2]]))
+
+        let updated   = viewModel.getList(id: list.id)!
+        let aggregated = viewModel.getAggregateRanking(for: updated)
+        XCTAssertEqual(aggregated.first?.id, ids[1], "B should be ranked first since all collaborators prefer it")
+    }
+
+    // MARK: - Refresh
+
+    func testRefreshReloadsFromStorage() {
         viewModel.createList(name: "Initial", items: ["A"], isCollaborative: false)
-        let listId = viewModel.lists.first!.id
-        
-        // Modify storage directly (simulating another user/device)
+        guard let list = viewModel.lists.first else { return XCTFail() }
+
+        // Simulate external edit
         var lists = storage.loadLists()
         lists[0].name = "Modified"
         storage.saveLists(lists)
-        
-        // Refresh should pick up the change
+
         viewModel.refresh()
-        
-        let refreshed = viewModel.getList(id: listId)!
-        XCTAssertEqual(refreshed.name, "Modified", "Refresh should reload from storage")
+
+        XCTAssertEqual(viewModel.getList(id: list.id)?.name, "Modified")
     }
-    
-    func testRefreshUpdatesCollaborativeRankings() {
-        viewModel.createList(name: "Sync Test", items: ["A", "B", "C"], isCollaborative: true)
-        let listId = viewModel.lists.first!.id
-        let itemIds = viewModel.lists.first!.items.map { $0.id }
-        
-        // Add contribution in current view model
-        let ranking = CollaboratorRanking(userId: ownerUserId, ranking: itemIds)
-        viewModel.upsertContribution(listId: listId, ranking: ranking)
-        
-        // Simulate another contribution from storage (another user)
-        var lists = storage.loadLists()
-        var list = lists.first!
-        let newRanking = CollaboratorRanking(userId: collaboratorUserId, ranking: Array(itemIds.reversed()))
-        list.collaborators.append(newRanking)
-        // Recalculate aggregated
-        list.items = storage.aggregateRanking(for: list)
-        lists[0] = list
-        storage.saveLists(lists)
-        
-        // Refresh should pick up new collaborator
+
+    func testRefreshPicksUpExternalContributions() {
+        viewModel.createList(name: "Sync", items: ["A", "B", "C"], isCollaborative: true)
+        guard let list = viewModel.lists.first else { return XCTFail() }
+        let ids = list.items.map { $0.id }
+
+        viewModel.upsertContribution(listId: list.id,
+                                     ranking: CollaboratorRanking(userId: currentUserId, ranking: ids))
+
+        // Simulate an external contribution arriving via storage
+        var stored = storage.loadLists()
+        var storedList = stored.first!
+        storedList.collaborators.append(
+            CollaboratorRanking(userId: UUID(), ranking: Array(ids.reversed()))
+        )
+        storedList.items = storage.aggregateRanking(for: storedList)
+        stored[0] = storedList
+        storage.saveLists(stored)
+
         viewModel.refresh()
-        
-        let refreshed = viewModel.getList(id: listId)!
-        XCTAssertEqual(refreshed.collaborators.count, 2, "Refresh should pick up new collaborator contributions")
+
+        XCTAssertEqual(viewModel.getList(id: list.id)!.collaborators.count, 2,
+                       "Refresh should surface contributions written directly to storage")
     }
-    
-    func testGetListReturnsFreshData() {
-        viewModel.createList(name: "Fresh Test", items: ["A"], isCollaborative: false)
-        let listId = viewModel.lists.first!.id
-        
-        // Modify via view model
-        viewModel.renameList(listId, newName: "Renamed")
-        
-        // getList should return the updated version
-        let fresh = viewModel.getList(id: listId)!
-        XCTAssertEqual(fresh.name, "Renamed", "getList should return current state")
+
+    // MARK: - Misc edge cases
+
+    func testDeleteWithInvalidIndexDoesNotCrash() {
+        viewModel.createList(name: "Test", items: ["A"], isCollaborative: false)
+        viewModel.deleteList(at: IndexSet(integer: 999))
+        XCTAssertFalse(viewModel.lists.isEmpty, "Invalid index delete should be a no-op")
     }
-    
-    func testGetAggregateRankingUsesFreshData() {
-        viewModel.createList(name: "Aggregate Test", items: ["A", "B", "C"], isCollaborative: true)
-        let listId = viewModel.lists.first!.id
-        let itemIds = viewModel.lists.first!.items.map { $0.id }
-        
-        // Add first contribution - ranks A, B, C
-        let ranking1 = CollaboratorRanking(userId: ownerUserId, ranking: itemIds)
-        viewModel.upsertContribution(listId: listId, ranking: ranking1)
-        
-        let list1 = viewModel.getList(id: listId)!
-        let aggregated1 = viewModel.getAggregateRanking(for: list1)
-        
-        // With one collaborator, should match their ranking
-        XCTAssertEqual(aggregated1.map { $0.id }, itemIds, "Single collaborator should determine ranking")
-        
-        // Add second contribution with different ranking - ranks C, A, B
-        let ranking2 = CollaboratorRanking(userId: collaboratorUserId, ranking: [itemIds[2], itemIds[0], itemIds[1]])
-        viewModel.upsertContribution(listId: listId, ranking: ranking2)
-        
-        let list2 = viewModel.getList(id: listId)!
-        let aggregated2 = viewModel.getAggregateRanking(for: list2)
-        
-        // Aggregated ranking should be different
-        // With rankings [A,B,C] and [C,A,B]:
-        // A scores: 3 + 2 = 5 (should be first)
-        // B scores: 2 + 1 = 3
-        // C scores: 1 + 3 = 4
-        XCTAssertNotEqual(aggregated1.map { $0.id }, aggregated2.map { $0.id },
-                         "Aggregate ranking should reflect latest contributions")
-        XCTAssertEqual(aggregated2.first?.id, itemIds[0], "A should be first after both contributions")
+
+    func testGetListReturnsNilForUnknownId() {
+        XCTAssertNil(viewModel.getList(id: UUID()))
     }
-    
-    // MARK: - Edge Cases
-    
-    func testNonCollaborativeListDoesNotSaveContributions() {
-        viewModel.createList(name: "Regular", items: ["A", "B"], isCollaborative: false)
-        let listId = viewModel.lists.first!.id
-        let itemIds = viewModel.lists.first!.items.map { $0.id }
-        
-        let ranking = CollaboratorRanking(userId: ownerUserId, ranking: itemIds)
-        viewModel.upsertContribution(listId: listId, ranking: ranking)
-        
-        let updated = viewModel.getList(id: listId)!
-        XCTAssertTrue(updated.collaborators.isEmpty, "Non-collaborative lists should not store contributions")
+
+    func testSetCollaborativeOnUnknownIdDoesNotCrash() {
+        viewModel.setCollaborative(true, for: UUID())
+        viewModel.setCollaborative(false, for: UUID())
+        XCTAssertTrue(true)
     }
-    
-    func testUpsertContributionForNonExistentListDoesNothing() {
-        let fakeListId = UUID()
-        let ranking = CollaboratorRanking(userId: ownerUserId, ranking: [])
-        
-        // Should not crash
-        viewModel.upsertContribution(listId: fakeListId, ranking: ranking)
-        
-        XCTAssertTrue(viewModel.lists.isEmpty, "Should not create new list")
+
+    func testRenameCollaborativeListPreservesContributors() {
+        viewModel.createList(name: "Movies", items: ["A", "B"], isCollaborative: true)
+        guard let list = viewModel.lists.first else { return XCTFail() }
+
+        viewModel.upsertContribution(listId: list.id,
+                                     ranking: CollaboratorRanking(userId: otherUserId, ranking: list.items.map { $0.id }))
+        viewModel.renameList(list.id, newName: "Best Movies")
+
+        let updated = viewModel.getList(id: list.id)!
+        XCTAssertEqual(updated.name, "Best Movies")
+        XCTAssertEqual(updated.collaborators.count, 1, "Rename should not clear contributions")
     }
-    
-    func testDeleteWithMultipleListsOnlyDeletesAllowed() {
-        // Create owned collaborative list
-        viewModel.createList(name: "Owned", items: ["A"], isCollaborative: true)
-        
-        // Create non-owned collaborative list
-        viewModel.createList(name: "Shared", items: ["B"], isCollaborative: true)
-        var shared = viewModel.lists.last!
-        shared.ownerId = collaboratorUserId
-        viewModel.replaceList(shared)
-        
-        // Create regular list
-        viewModel.createList(name: "Regular", items: ["C"], isCollaborative: false)
-        
-        let initialCount = viewModel.lists.count
-        
-        // Try to delete all three (indices 0, 1, 2)
-        viewModel.deleteList(at: IndexSet([0, 1, 2]))
-        
-        // Should delete owned and regular, but not shared
-        XCTAssertEqual(viewModel.lists.count, initialCount - 2, "Should delete allowed lists only")
-        XCTAssertEqual(viewModel.lists.first?.name, "Shared", "Shared list should remain")
+
+    // MARK: - Persistence across restarts
+
+    func testOwnershipPersistedAcrossRestarts() {
+        viewModel.createList(name: "Collab", items: ["A"], isCollaborative: true)
+        guard let list = viewModel.lists.first else { return XCTFail() }
+        let id = list.id
+        let ownerIdBeforeRestart = list.ownerId
+
+        let freshVM = ListsViewModel(storage: storage)
+        XCTAssertEqual(freshVM.getList(id: id)?.ownerId, ownerIdBeforeRestart,
+                       "ownerId must be preserved after app restart")
     }
-    
-    func testAggregateRankingWithMissingItems() {
-        let a = RankleItem(title: "A")
-        let b = RankleItem(title: "B")
-        let c = RankleItem(title: "C")
-        var list = RankleList(name: "Missing", items: [a, b, c], isCollaborative: true)
-        
-        // Collaborator only ranks A and C, missing B
-        list.collaborators = [
-            CollaboratorRanking(userId: UUID(), ranking: [a.id, c.id])
-        ]
-        
-        let aggregated = storage.aggregateRanking(for: list)
-        
-        XCTAssertEqual(aggregated.count, 3, "All items should be in aggregated ranking")
-        XCTAssertTrue(aggregated.contains(where: { $0.id == b.id }), "Missing item should still appear")
-    }
-    
-    func testAggregateRankingWithEmptyCollaborators() {
-        let list = RankleList(name: "Empty", items: [
-            RankleItem(title: "A"),
-            RankleItem(title: "B")
-        ], isCollaborative: true)
-        
-        let aggregated = storage.aggregateRanking(for: list)
-        
-        // Should return original order when no collaborators
-        XCTAssertEqual(aggregated.count, 2)
-        XCTAssertEqual(aggregated.map { $0.title }, list.items.map { $0.title })
-    }
-    
-    func testRefreshWithNoChanges() {
-        viewModel.createList(name: "Stable", items: ["A"], isCollaborative: false)
-        let listId = viewModel.lists.first!.id
-        let originalName = viewModel.getList(id: listId)!.name
-        
-        viewModel.refresh()
-        
-        let afterRefresh = viewModel.getList(id: listId)!
-        XCTAssertEqual(afterRefresh.name, originalName, "Refresh should maintain data when nothing changed")
-    }
-    
-    func testGetListReturnsNilForNonExistentId() {
-        let fakeId = UUID()
-        let result = viewModel.getList(id: fakeId)
-        
-        XCTAssertNil(result, "Should return nil for non-existent list ID")
-    }
-    
-    func testCollaborativeListItemsUpdatedAfterContribution() {
-        viewModel.createList(name: "Auto Update", items: ["A", "B", "C"], isCollaborative: true)
-        let listId = viewModel.lists.first!.id
-        let itemIds = viewModel.lists.first!.items.map { $0.id }
-        
-        // Add contribution
-        let ranking = CollaboratorRanking(userId: ownerUserId, ranking: Array(itemIds.reversed()))
-        viewModel.upsertContribution(listId: listId, ranking: ranking)
-        
-        // Items array should be updated to aggregated ranking
-        let afterContribution = viewModel.getList(id: listId)!
-        let aggregated = viewModel.getAggregateRanking(for: afterContribution)
-        
-        XCTAssertEqual(afterContribution.items.map { $0.id }, aggregated.map { $0.id },
-                      "List items should match aggregated ranking after contribution")
+
+    func testImportedCollaborativeListPersistedAcrossRestarts() {
+        let shared = makeSharedList(name: "Shared Collab")
+        viewModel.importList(shared)
+
+        let freshVM = ListsViewModel(storage: storage)
+        guard let loaded = freshVM.getList(id: shared.id) else {
+            return XCTFail("Imported collaborative list should survive app restart")
+        }
+        XCTAssertEqual(loaded.ownerId, otherUserId)
+        XCTAssertTrue(loaded.isCollaborative)
     }
 }

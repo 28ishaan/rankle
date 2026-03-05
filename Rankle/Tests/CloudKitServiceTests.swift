@@ -2,340 +2,316 @@ import XCTest
 import CloudKit
 @testable import Rankle
 
-/// Tests for CloudKit integration and real-time sync functionality
+/// Tests for CloudKit integration.
+///
+/// CloudKit network calls are expected to fail in the CI/test environment; those tests
+/// verify graceful error handling rather than successful round-trips.  Tests that do not
+/// require a network connection (encoding, subscription ID format, viewModel behavior,
+/// etc.) make hard assertions.
 final class CloudKitServiceTests: XCTestCase {
     private var cloudKit: CloudKitService!
     private var tempDir: URL!
     private var storage: StorageService!
-    
+
     override func setUp() {
         super.setUp()
         cloudKit = CloudKitService.shared
-        let base = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("rankle-cloudkit-tests-\(UUID().uuidString)")
+        let base = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("rankle-cloudkit-tests-\(UUID().uuidString)")
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         tempDir = base
         storage = StorageService(baseDirectoryURL: tempDir)
     }
-    
+
     override func tearDown() {
         try? FileManager.default.removeItem(at: tempDir)
-        tempDir = nil
-        storage = nil
-        cloudKit = nil
+        tempDir = nil; storage = nil; cloudKit = nil
         super.tearDown()
     }
-    
-    // MARK: - Account Status Tests
-    
-    func testCheckAccountStatus() async {
+
+    // MARK: - Account Status
+
+    func testCheckAccountStatusDoesNotThrowUnexpected() async {
         do {
             let status = try await cloudKit.checkAccountStatus()
-            // In tests, account might not be available, but method should not throw
-            XCTAssertTrue([.available, .noAccount, .couldNotDetermine, .restricted].contains(status),
-                         "Should return valid account status")
+            let validStatuses: [CKAccountStatus] = [.available, .noAccount, .couldNotDetermine, .restricted]
+            XCTAssertTrue(validStatuses.contains(status), "Must return a recognised CKAccountStatus")
         } catch {
-            // CloudKit might fail in test environment - that's acceptable
-            // We're testing that the method exists and can be called
-            XCTAssertTrue(true, "Account check may fail in test environment")
+            // CloudKit unavailable in test environment — acceptable
         }
     }
-    
-    // MARK: - List Encoding/Decoding Tests
-    
-    func testRecordFromListEncodesCorrectly() throws {
+
+    // MARK: - Model / Encoding Correctness
+
+    func testRankleListStructureIsCorrect() {
         var list = RankleList(
             name: "Test List",
-            items: [
-                RankleItem(title: "Item A"),
-                RankleItem(title: "Item B")
-            ],
+            items: [RankleItem(title: "Item A"), RankleItem(title: "Item B")],
             color: .blue,
             isCollaborative: true
         )
         list.ownerId = UUID()
-        
-        // Create record using reflection/private API isn't possible, but we can test save/load cycle
-        // For now, we'll test the encoding logic through integration
-        
-        // Verify list structure is correct
+
         XCTAssertEqual(list.name, "Test List")
         XCTAssertEqual(list.items.count, 2)
         XCTAssertTrue(list.isCollaborative)
     }
-    
-    func testListMediaExcludedFromCloudKit() {
-        // When encoding for CloudKit, media should be excluded
-        let itemWithMedia = RankleItem(title: "Test", media: [
-            MediaItem(type: .image, filename: "test.jpg")
-        ])
-        let list = RankleList(
-            name: "Test",
-            items: [itemWithMedia],
-            isCollaborative: true
-        )
-        
-        // Items in collaborative lists should not have media when synced to CloudKit
-        // This is tested implicitly - CloudKitService.encodeItems strips media
-        XCTAssertTrue(list.items.first?.media.isEmpty == false, "Original item has media")
+
+    func testCollaborativeListItemsHaveNoMediaAfterCreation() {
+        // Media is stripped when creating a collaborative list through the ViewModel
+        let vm = ListsViewModel(storage: storage)
+        vm.createList(name: "No Media", items: ["A", "B"], isCollaborative: true)
+
+        guard let list = vm.lists.first(where: { $0.isCollaborative }) else {
+            return XCTFail("Expected a collaborative list to exist")
+        }
+        XCTAssertTrue(list.items.allSatisfy { $0.media.isEmpty },
+                      "Collaborative list items must not carry media")
     }
-    
-    // MARK: - Contribution Encoding/Decoding Tests
-    
-    func testContributionRecordStructure() {
+
+    func testNonCollaborativeListItemsPreserveMedia() {
+        let imageItem = RankleItem(title: "With Image",
+                                   media: [MediaItem(type: .image, filename: "test.jpg")])
+        let vm = ListsViewModel(storage: storage)
+        vm.createListWithItems(name: "Media OK", items: [imageItem], isCollaborative: false)
+
+        guard let list = vm.lists.first else { return XCTFail() }
+        XCTAssertFalse(list.isCollaborative)
+        XCTAssertEqual(list.items.first?.media.count, 1,
+                       "Non-collaborative list items must keep their media")
+    }
+
+    func testCollaboratorRankingStructureIsCorrect() {
         let ranking = CollaboratorRanking(
             userId: UUID(),
             displayName: "Test User",
             ranking: [UUID(), UUID(), UUID()],
             updatedAt: Date()
         )
-        
         XCTAssertNotNil(ranking.userId)
         XCTAssertEqual(ranking.ranking.count, 3)
         XCTAssertNotNil(ranking.updatedAt)
     }
-    
-    // MARK: - CloudKit Integration Tests (with ListsViewModel)
-    
-    func testCreatingCollaborativeListTriggersCloudKitSave() {
-        let viewModel = ListsViewModel(storage: storage)
-        
-        let initialCount = viewModel.lists.count
-        viewModel.createList(name: "CloudKit Test", items: ["A", "B"], isCollaborative: true)
-        
-        XCTAssertEqual(viewModel.lists.count, initialCount + 1, "List should be created")
-        let created = viewModel.lists.first!
-        XCTAssertTrue(created.isCollaborative, "List should be collaborative")
-        
-        // CloudKit save happens asynchronously, so we can't easily test it here
-        // But we verify the list is created correctly which triggers CloudKit save
+
+    // MARK: - JSON Round-trips
+
+    func testRankleListJsonRoundTrip() throws {
+        var original = RankleList(
+            name: "Round Trip",
+            items: [RankleItem(title: "X"), RankleItem(title: "Y")],
+            color: .red,
+            isCollaborative: true
+        )
+        original.ownerId = UUID()
+        original.collaborators = [CollaboratorRanking(userId: UUID(), ranking: original.items.map { $0.id })]
+
+        let data   = try JSONEncoder().encode(original)
+        let decoded = try JSONDecoder().decode(RankleList.self, from: data)
+
+        XCTAssertEqual(decoded.id,              original.id)
+        XCTAssertEqual(decoded.name,            original.name)
+        XCTAssertEqual(decoded.ownerId,         original.ownerId)
+        XCTAssertEqual(decoded.isCollaborative, original.isCollaborative)
+        XCTAssertEqual(decoded.items.count,     original.items.count)
+        XCTAssertEqual(decoded.collaborators.count, original.collaborators.count)
     }
-    
-    func testNonCollaborativeListDoesNotTriggerCloudKitSave() {
-        let viewModel = ListsViewModel(storage: storage)
-        
-        viewModel.createList(name: "Local Only", items: ["A"], isCollaborative: false)
-        
-        let created = viewModel.lists.first!
-        XCTAssertFalse(created.isCollaborative, "List should not be collaborative")
-        // Non-collaborative lists don't sync to CloudKit
+
+    func testCollaboratorRankingJsonRoundTrip() throws {
+        let ids      = [UUID(), UUID(), UUID()]
+        let original = CollaboratorRanking(userId: UUID(), displayName: "Alice", ranking: ids, updatedAt: Date())
+
+        let data    = try JSONEncoder().encode(original)
+        let decoded  = try JSONDecoder().decode(CollaboratorRanking.self, from: data)
+
+        XCTAssertEqual(decoded.userId,      original.userId)
+        XCTAssertEqual(decoded.displayName, original.displayName)
+        XCTAssertEqual(decoded.ranking,     original.ranking)
     }
-    
-    func testEnablingCollaborationRemovesMedia() {
-        let viewModel = ListsViewModel(storage: storage)
-        
-        // Create non-collaborative list with media
-        viewModel.createList(name: "With Media", items: ["A"], isCollaborative: false)
-        var list = viewModel.lists.first!
-        
-        // Add media to item
-        var item = list.items[0]
-        item.media.append(MediaItem(type: .image, filename: "test.jpg"))
-        list.items[0] = item
-        viewModel.replaceList(list)
-        
-        // Enable collaboration
-        viewModel.setCollaborative(true, for: list.id)
-        
-        let updated = viewModel.getList(id: list.id)!
+
+    // MARK: - Subscription ID Format
+
+    func testListSubscriptionIdIsUniquePerList() {
+        let id1 = "list-\(UUID().uuidString)"
+        let id2 = "list-\(UUID().uuidString)"
+        XCTAssertNotEqual(id1, id2)
+    }
+
+    func testContributionSubscriptionIdIsUniquePerList() {
+        let id1 = "contributions-\(UUID().uuidString)"
+        let id2 = "contributions-\(UUID().uuidString)"
+        XCTAssertNotEqual(id1, id2)
+    }
+
+    func testListAndContributionSubscriptionIdsAreDistinct() {
+        let listId   = UUID().uuidString
+        let listSub  = "list-\(listId)"
+        let contribSub = "contributions-\(listId)"
+        XCTAssertNotEqual(listSub, contribSub,
+                          "List and contribution subscription IDs must be distinct for the same list ID")
+    }
+
+    // MARK: - ViewModel: Collaborative List Creation Triggers CloudKit
+
+    func testCreatingCollaborativeListSetsCorrectOwner() {
+        let vm = ListsViewModel(storage: storage)
+        vm.createList(name: "CloudKit Test", items: ["A", "B"], isCollaborative: true)
+
+        guard let created = vm.lists.first(where: { $0.name == "CloudKit Test" }) else {
+            return XCTFail("Expected to find the created list")
+        }
+        XCTAssertTrue(created.isCollaborative)
+        XCTAssertEqual(created.ownerId, UserService.shared.currentUserId,
+                       "Creator must be set as owner")
+    }
+
+    func testCreatingNonCollaborativeListDoesNotSyncToCloudKit() {
+        let vm = ListsViewModel(storage: storage)
+        vm.createList(name: "Local Only", items: ["A"], isCollaborative: false)
+
+        guard let created = vm.lists.first(where: { $0.name == "Local Only" }) else {
+            return XCTFail()
+        }
+        XCTAssertFalse(created.isCollaborative)
+        // Non-collaborative list — CloudKit save is never triggered
+    }
+
+    // MARK: - ViewModel: Enabling Collaboration Removes Media
+
+    func testEnablingCollaborationStripsMedia() {
+        let vm = ListsViewModel(storage: storage)
+        vm.createList(name: "With Media", items: ["A"], isCollaborative: false)
+
+        guard var list = vm.lists.first(where: { $0.name == "With Media" }) else { return XCTFail() }
+        list.items[0].media.append(MediaItem(type: .image, filename: "test.jpg"))
+        vm.replaceList(list)
+
+        vm.setCollaborative(true, for: list.id)
+
+        guard let updated = vm.getList(id: list.id) else { return XCTFail() }
         XCTAssertTrue(updated.isCollaborative)
-        // All items should have media removed
         XCTAssertTrue(updated.items.allSatisfy { $0.media.isEmpty },
-                     "All items should have media removed when enabling collaboration")
+                      "All item media must be removed when collaboration is enabled")
     }
-    
-    func testSavingContributionTriggersCloudKitSync() {
-        let viewModel = ListsViewModel(storage: storage)
-        
-        viewModel.createList(name: "Contributions", items: ["A", "B", "C"], isCollaborative: true)
-        let listId = viewModel.lists.first!.id
-        let itemIds = viewModel.lists.first!.items.map { $0.id }
-        
+
+    // MARK: - ViewModel: Contribution Handling
+
+    func testSavingContributionStoresItLocally() {
+        let vm = ListsViewModel(storage: storage)
+        vm.createList(name: "Contributions", items: ["A", "B", "C"], isCollaborative: true)
+
+        guard let list = vm.lists.first(where: { $0.name == "Contributions" }) else { return XCTFail() }
+        let itemIds = list.items.map { $0.id }
+
         let ranking = CollaboratorRanking(
             userId: UserService.shared.currentUserId,
             ranking: itemIds
         )
-        
-        // This should trigger CloudKit save
-        viewModel.upsertContribution(listId: listId, ranking: ranking)
-        
-        let updated = viewModel.getList(id: listId)!
-        XCTAssertEqual(updated.collaborators.count, 1, "Contribution should be saved")
+        vm.upsertContribution(listId: list.id, ranking: ranking)
+
+        guard let updated = vm.getList(id: list.id) else { return XCTFail() }
+        XCTAssertEqual(updated.collaborators.count, 1, "Contribution must be stored locally")
+        XCTAssertEqual(updated.collaborators.first?.userId, UserService.shared.currentUserId)
     }
-    
-    // MARK: - Sync Tests
-    
-    func testSyncWithCloudKitHandlesNoAccount() async {
-        let viewModel = ListsViewModel(storage: storage)
-        
-        // Add a local list
-        viewModel.createList(name: "Local", items: ["A"], isCollaborative: true)
-        
-        // Sync - if account not available, should fall back gracefully
-        await viewModel.syncWithCloudKit()
-        
-        // List should still exist locally
-        XCTAssertFalse(viewModel.lists.isEmpty, "Local list should be preserved")
-    }
-    
-    func testSyncPreservesLocalLists() async {
-        let viewModel = ListsViewModel(storage: storage)
-        
-        viewModel.createList(name: "Preserve", items: ["A"], isCollaborative: false)
-        viewModel.createList(name: "Preserve2", items: ["B"], isCollaborative: true)
-        
-        let initialCount = viewModel.lists.count
-        
-        // Sync should preserve all lists
-        await viewModel.syncWithCloudKit()
-        
-        XCTAssertEqual(viewModel.lists.count, initialCount, "All lists should be preserved")
-    }
-    
-    // MARK: - Subscription Tests
-    
-    func testSubscriptionIDsAreUnique() {
-        let listId1 = UUID()
-        let listId2 = UUID()
-        
-        // Subscription IDs should be unique per list
-        let subId1 = "list-\(listId1.uuidString)"
-        let subId2 = "list-\(listId2.uuidString)"
-        
-        XCTAssertNotEqual(subId1, subId2, "Subscription IDs should be unique")
-        
-        let contribId1 = "contributions-\(listId1.uuidString)"
-        let contribId2 = "contributions-\(listId2.uuidString)"
-        
-        XCTAssertNotEqual(contribId1, contribId2, "Contribution subscription IDs should be unique")
-    }
-    
-    // MARK: - Error Handling Tests
-    
-    func testFetchAllListsHandlesErrors() async {
-        // This tests that the method structure is correct
-        // Actual CloudKit errors will occur in real environment
-        do {
-            let lists = try await cloudKit.fetchAllLists()
-            // In test environment, might return empty or error
-            // We're just verifying the method exists and can be called
-            XCTAssertNotNil(lists, "Should return array (even if empty)")
-        } catch {
-            // CloudKit errors are expected in test environment
-            XCTAssertTrue(true, "CloudKit may not be available in test environment")
-        }
-    }
-    
-    func testSaveListHandlesErrors() async {
-        let list = RankleList(name: "Error Test", items: [], isCollaborative: true)
-        
-        do {
-            try await cloudKit.saveList(list)
-            // Might succeed or fail depending on CloudKit availability
-            XCTAssertTrue(true, "Save attempt completed")
-        } catch {
-            // Expected in test environment
-            XCTAssertTrue(true, "CloudKit save may fail in test environment")
-        }
-    }
-    
-    // MARK: - Data Integrity Tests
-    
-    func testCollaborativeListsExcludeMediaWhenSyncing() {
-        // Verify that when a collaborative list is created, items don't have media
-        let viewModel = ListsViewModel(storage: storage)
-        
-        // Create collaborative list
-        viewModel.createList(name: "No Media", items: ["A", "B"], isCollaborative: true)
-        
-        let list = viewModel.lists.first!
-        XCTAssertTrue(list.isCollaborative)
-        
-        // Items should not have media in collaborative lists
-        // (media is removed when enabling collaboration or when creating as collaborative)
-        XCTAssertTrue(list.items.allSatisfy { $0.media.isEmpty },
-                     "Collaborative list items should not have media")
-    }
-    
-    func testDisablingCollaborationClearsContributors() {
-        let viewModel = ListsViewModel(storage: storage)
-        
-        viewModel.createList(name: "Toggle", items: ["A", "B"], isCollaborative: true)
-        let listId = viewModel.lists.first!.id
-        
-        // Add contributors
-        let ranking = CollaboratorRanking(userId: UUID(), ranking: [])
-        viewModel.upsertContribution(listId: listId, ranking: ranking)
-        
-        // Disable collaboration
-        viewModel.setCollaborative(false, for: listId)
-        
-        let updated = viewModel.getList(id: listId)!
-        XCTAssertFalse(updated.isCollaborative)
-        XCTAssertTrue(updated.collaborators.isEmpty, "Contributors should be cleared")
-    }
-    
-    // MARK: - Refresh Triggers Sync
-    
-    func testRefreshCallsCloudKitSync() {
-        let viewModel = ListsViewModel(storage: storage)
-        
-        viewModel.createList(name: "Refresh", items: ["A"], isCollaborative: true)
-        let initialCount = viewModel.lists.count
-        
-        // Refresh should trigger sync (but won't complete immediately)
-        viewModel.refresh()
-        
-        // Verify list still exists (refresh doesn't remove lists)
-        XCTAssertEqual(viewModel.lists.count, initialCount, "Refresh should preserve lists")
-        XCTAssertFalse(viewModel.lists.isEmpty)
-    }
-    
-    // MARK: - Edge Cases
-    
-    func testFetchContributionsForNonExistentList() async {
-        let fakeListId = UUID()
-        
-        do {
-            let contributions = try await cloudKit.fetchContributions(for: fakeListId)
-            XCTAssertTrue(contributions.isEmpty, "Should return empty array for non-existent list")
-        } catch {
-            // CloudKit errors are acceptable in test environment
-            XCTAssertTrue(true)
-        }
-    }
-    
-    func testSaveListWithManyItems() async {
-        let items = (1...100).map { RankleItem(title: "Item \($0)") }
-        let list = RankleList(name: "Large", items: items, isCollaborative: true)
-        
-        do {
-            try await cloudKit.saveList(list)
-            XCTAssertTrue(true, "Should handle large lists")
-        } catch {
-            // May fail in test environment
-            XCTAssertTrue(true)
-        }
-    }
-    
-    func testMultipleContributionsFromSameUser() {
-        let viewModel = ListsViewModel(storage: storage)
-        
-        viewModel.createList(name: "Updates", items: ["A", "B", "C"], isCollaborative: true)
-        let listId = viewModel.lists.first!.id
-        let itemIds = viewModel.lists.first!.items.map { $0.id }
+
+    func testMultipleSubmissionsFromSameUserDoNotDuplicate() {
+        let vm = ListsViewModel(storage: storage)
+        vm.createList(name: "Updates", items: ["A", "B", "C"], isCollaborative: true)
+
+        guard let list = vm.lists.first(where: { $0.name == "Updates" }) else { return XCTFail() }
+        let ids    = list.items.map { $0.id }
         let userId = UserService.shared.currentUserId
-        
-        // First contribution
-        let ranking1 = CollaboratorRanking(userId: userId, ranking: itemIds)
-        viewModel.upsertContribution(listId: listId, ranking: ranking1)
-        
-        // Second contribution from same user (should update, not duplicate)
-        let ranking2 = CollaboratorRanking(userId: userId, ranking: Array(itemIds.reversed()))
-        viewModel.upsertContribution(listId: listId, ranking: ranking2)
-        
-        let updated = viewModel.getList(id: listId)!
-        XCTAssertEqual(updated.collaborators.count, 1, "Should update, not duplicate")
-        XCTAssertEqual(updated.collaborators.first?.ranking, Array(itemIds.reversed()), "Should have latest ranking")
+
+        vm.upsertContribution(listId: list.id, ranking: CollaboratorRanking(userId: userId, ranking: ids))
+        vm.upsertContribution(listId: list.id, ranking: CollaboratorRanking(userId: userId, ranking: Array(ids.reversed())))
+
+        guard let updated = vm.getList(id: list.id) else { return XCTFail() }
+        XCTAssertEqual(updated.collaborators.count, 1, "Re-submission must update the existing record")
+        XCTAssertEqual(updated.collaborators.first?.ranking, Array(ids.reversed()),
+                       "Latest ranking must be stored")
+    }
+
+    // MARK: - ViewModel: Sync Fallback
+
+    func testSyncWithNoCloudKitAccountPreservesLocalLists() async {
+        let vm = ListsViewModel(storage: storage)
+        vm.createList(name: "Preserve", items: ["A"], isCollaborative: false)
+        vm.createList(name: "Preserve2", items: ["B"], isCollaborative: true)
+        let initialCount = vm.lists.count
+
+        await vm.syncWithCloudKit()
+
+        // CloudKit will fail in test env; local lists must not be wiped
+        XCTAssertEqual(vm.lists.count, initialCount,
+                       "Sync failure must not delete locally-stored lists")
+    }
+
+    func testRefreshPreservesLocalLists() {
+        let vm = ListsViewModel(storage: storage)
+        vm.createList(name: "Persist", items: ["A"], isCollaborative: true)
+        let initialCount = vm.lists.count
+
+        vm.refresh()
+
+        XCTAssertEqual(vm.lists.count, initialCount,
+                       "Refresh must not drop locally-stored lists")
+    }
+
+    // MARK: - CloudKit API: Graceful Error Handling
+
+    func testFetchOwnedListsHandlesUnavailableCloudKit() async {
+        do {
+            let lists = try await cloudKit.fetchOwnedLists(ownerId: UserService.shared.currentUserId)
+            XCTAssertNotNil(lists)
+        } catch {
+            // CloudKit is unavailable in tests — expected to fail gracefully
+        }
+    }
+
+    func testFetchContributionsForUnknownListHandlesErrors() async {
+        do {
+            let contributions = try await cloudKit.fetchContributions(for: UUID())
+            XCTAssertTrue(contributions.isEmpty,
+                          "Unknown list ID should return empty contributions")
+        } catch {
+            // CloudKit unavailable — expected
+        }
+    }
+
+    func testSaveListHandlesCloudKitErrors() async {
+        let list = RankleList(name: "Error Test", items: [], isCollaborative: true)
+        do {
+            try await cloudKit.saveList(list)
+        } catch {
+            // CloudKit save may fail in test env — no crash is the requirement
+        }
+        XCTAssertTrue(true, "saveList must not crash even when CloudKit is unavailable")
+    }
+
+    func testSaveContributionHandlesCloudKitErrors() async {
+        let ranking = CollaboratorRanking(userId: UUID(), ranking: [])
+        do {
+            try await cloudKit.saveContribution(ranking, for: UUID())
+        } catch {
+            // CloudKit save may fail in test env
+        }
+        XCTAssertTrue(true, "saveContribution must not crash even when CloudKit is unavailable")
+    }
+
+    // MARK: - Disabling Collaboration
+
+    func testDisablingCollaborationClearsAllContributions() {
+        let vm = ListsViewModel(storage: storage)
+        vm.createList(name: "Toggle", items: ["A", "B"], isCollaborative: true)
+
+        guard let list = vm.lists.first(where: { $0.name == "Toggle" }) else { return XCTFail() }
+        vm.upsertContribution(listId: list.id,
+                               ranking: CollaboratorRanking(userId: UUID(), ranking: []))
+
+        vm.setCollaborative(false, for: list.id)
+
+        guard let updated = vm.getList(id: list.id) else { return XCTFail() }
+        XCTAssertFalse(updated.isCollaborative)
+        XCTAssertTrue(updated.collaborators.isEmpty,
+                      "Disabling collaboration must clear all stored contributions")
     }
 }
-

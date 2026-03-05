@@ -5,7 +5,6 @@ final class CloudKitService {
     static let shared = CloudKitService()
     
     private let container: CKContainer
-    private let privateDB: CKDatabase
     private let publicDB: CKDatabase
     
     // Record types
@@ -14,7 +13,6 @@ final class CloudKitService {
     
     private init() {
         self.container = CKContainer.default()
-        self.privateDB = container.privateCloudDatabase
         self.publicDB = container.publicCloudDatabase
     }
     
@@ -27,125 +25,150 @@ final class CloudKitService {
     // MARK: - Lists
     
     func saveList(_ list: RankleList) async throws {
-        let record = try recordFromList(list)
-        _ = try await privateDB.save(record)
-        // Also save to local storage as backup
-        let storage = StorageService()
-        storage.saveLists([list])
+        // Fetch the existing record first so CloudKit treats this as an update (not an insert).
+        // If the record doesn't exist yet, create a fresh one.
+        let recordID = CKRecord.ID(recordName: list.id.uuidString, zoneID: .default)
+        let record: CKRecord
+        if let existing = try? await publicDB.record(for: recordID) {
+            record = existing
+        } else {
+            record = CKRecord(recordType: listRecordType, recordID: recordID)
+        }
+        try populateListRecord(record, from: list)
+        _ = try await publicDB.save(record)
     }
     
-    func fetchList(id: UUID) async throws -> RankleList? {
+    func fetchListById(id: UUID) async throws -> RankleList? {
         let recordID = CKRecord.ID(recordName: id.uuidString, zoneID: .default)
-        guard let record = try? await privateDB.record(for: recordID) else {
+        guard let record = try? await publicDB.record(for: recordID) else {
             return nil
         }
         return try listFromRecord(record)
     }
     
-    func fetchAllLists() async throws -> [RankleList] {
-        let predicate = NSPredicate(value: true)
+    /// Fetches all collaborative lists owned by the given user from the public database.
+    /// NOTE: Requires the `ownerId` field to be marked as Queryable in the CloudKit Dashboard schema.
+    func fetchOwnedLists(ownerId: UUID) async throws -> [RankleList] {
+        let predicate = NSPredicate(format: "ownerId == %@", ownerId.uuidString)
         let query = CKQuery(recordType: listRecordType, predicate: predicate)
-        
+
         var lists: [RankleList] = []
         var cursor: CKQueryOperation.Cursor?
-        
-        repeat {
-            let result: (matchResults: [(CKRecord.ID, Result<CKRecord, Error>)], queryCursor: CKQueryOperation.Cursor?)
-            
-            if let existingCursor = cursor {
-                result = try await privateDB.records(continuingMatchFrom: existingCursor, desiredKeys: nil, resultsLimit: 100)
-            } else {
-                result = try await privateDB.records(matching: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: 100)
-            }
-            cursor = result.queryCursor
-            
-            for (_, recordResult) in result.matchResults {
-                switch recordResult {
-                case .success(let record):
-                    if let list = try? listFromRecord(record) {
-                        lists.append(list)
-                    }
+
+        do {
+            repeat {
+                let result: (matchResults: [(CKRecord.ID, Result<CKRecord, Error>)], queryCursor: CKQueryOperation.Cursor?)
+
+                if let existingCursor = cursor {
+                    result = try await publicDB.records(continuingMatchFrom: existingCursor, desiredKeys: nil, resultsLimit: 100)
+                } else {
+                    result = try await publicDB.records(matching: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: 100)
+                }
+                cursor = result.queryCursor
+
+                for (_, recordResult) in result.matchResults {
+                    switch recordResult {
+                    case .success(let record):
+                        if let list = try? listFromRecord(record) {
+                            lists.append(list)
+                        }
                     case .failure(let error):
                         #if DEBUG
                         print("Error fetching record: \(error)")
                         #endif
+                    }
                 }
-            }
-        } while cursor != nil
-        
+            } while cursor != nil
+        } catch let error as CKError where error.code == .unknownItem {
+            // Record type doesn't exist in the schema yet (no list has ever been saved).
+            // Return empty — the schema will be auto-created when the first list is saved.
+            return []
+        }
+
         return lists
     }
     
     func deleteList(id: UUID) async throws {
         let recordID = CKRecord.ID(recordName: id.uuidString, zoneID: .default)
-        try await privateDB.deleteRecord(withID: recordID)
+        try await publicDB.deleteRecord(withID: recordID)
     }
     
     // MARK: - Contributions
     
     func saveContribution(_ ranking: CollaboratorRanking, for listId: UUID) async throws {
-        let record = try recordFromContribution(ranking, listId: listId)
-        _ = try await privateDB.save(record)
-        
-        // Update local storage
-        let storage = StorageService()
-        let lists = storage.loadLists()
-        if let index = lists.firstIndex(where: { $0.id == listId }) {
-            var list = lists[index]
-            if let cidx = list.collaborators.firstIndex(where: { $0.userId == ranking.userId }) {
-                list.collaborators[cidx] = ranking
-            } else {
-                list.collaborators.append(ranking)
-            }
-            let aggregated = storage.aggregateRanking(for: list)
-            list.items = aggregated
-            storage.saveLists(lists)
+        // Fetch existing record so CloudKit treats this as an update, not a conflicting insert.
+        let recordName = "\(listId.uuidString)-\(ranking.userId.uuidString)"
+        let recordID = CKRecord.ID(recordName: recordName, zoneID: .default)
+        let record: CKRecord
+        if let existing = try? await publicDB.record(for: recordID) {
+            record = existing
+        } else {
+            record = CKRecord(recordType: contributionRecordType, recordID: recordID)
         }
+        record["userId"] = ranking.userId.uuidString
+        record["displayName"] = ranking.displayName
+        record["ranking"] = ranking.ranking.map { $0.uuidString }.joined(separator: ",")
+        record["updatedAt"] = ranking.updatedAt
+        record["listId"] = listId.uuidString
+        _ = try await publicDB.save(record)
     }
     
     func fetchContributions(for listId: UUID) async throws -> [CollaboratorRanking] {
         let predicate = NSPredicate(format: "listId == %@", listId.uuidString)
         let query = CKQuery(recordType: contributionRecordType, predicate: predicate)
-        
+
         var contributions: [CollaboratorRanking] = []
-        let result = try await privateDB.records(matching: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: 100)
-        
-        for (_, recordResult) in result.matchResults {
-            switch recordResult {
-            case .success(let record):
-                if let contribution = try? contributionFromRecord(record) {
-                    contributions.append(contribution)
+
+        do {
+            let result = try await publicDB.records(matching: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: 100)
+
+            for (_, recordResult) in result.matchResults {
+                switch recordResult {
+                case .success(let record):
+                    if let contribution = try? contributionFromRecord(record) {
+                        contributions.append(contribution)
+                    }
+                case .failure(let error):
+                    #if DEBUG
+                    print("Error fetching contribution: \(error)")
+                    #endif
                 }
-            case .failure(let error):
-                #if DEBUG
-                print("Error fetching contribution: \(error)")
-                #endif
             }
+        } catch let error as CKError where error.code == .unknownItem {
+            // Record type doesn't exist yet — no contributions have ever been saved.
+            return []
         }
-        
+
         return contributions
     }
     
     // MARK: - Subscriptions (Real-time updates)
     
+    /// Subscribe to structural changes on a specific list (owner adds/removes items, etc).
+    /// Uses the `listId` field stored on the list record for queryable subscription.
     func subscribeToListChanges(listId: UUID) async throws -> CKSubscription {
-        let predicate = NSPredicate(format: "recordID.recordName == %@", listId.uuidString)
+        let predicate = NSPredicate(format: "listId == %@", listId.uuidString)
         let subscription = CKQuerySubscription(
             recordType: listRecordType,
             predicate: predicate,
             subscriptionID: "list-\(listId.uuidString)",
             options: [.firesOnRecordCreation, .firesOnRecordUpdate, .firesOnRecordDeletion]
         )
-        
+
         let notificationInfo = CKSubscription.NotificationInfo()
         notificationInfo.shouldSendContentAvailable = true
         notificationInfo.soundName = ""
         subscription.notificationInfo = notificationInfo
-        
-        _ = try await privateDB.save(subscription)
+
+        do {
+            _ = try await publicDB.save(subscription)
+        } catch let error as CKError where error.code == .serverRecordChanged {
+            // Subscription with this ID already exists — that's fine, nothing to do.
+        }
         return subscription
     }
-    
+
+    /// Subscribe to new contributions from collaborators for a given list.
     func subscribeToContributionChanges(listId: UUID) async throws -> CKSubscription {
         let predicate = NSPredicate(format: "listId == %@", listId.uuidString)
         let subscription = CKQuerySubscription(
@@ -154,30 +177,32 @@ final class CloudKitService {
             subscriptionID: "contributions-\(listId.uuidString)",
             options: [.firesOnRecordCreation, .firesOnRecordUpdate]
         )
-        
+
         let notificationInfo = CKSubscription.NotificationInfo()
         notificationInfo.shouldSendContentAvailable = true
         notificationInfo.soundName = ""
         subscription.notificationInfo = notificationInfo
-        
-        _ = try await privateDB.save(subscription)
+
+        do {
+            _ = try await publicDB.save(subscription)
+        } catch let error as CKError where error.code == .serverRecordChanged {
+            // Subscription with this ID already exists — that's fine, nothing to do.
+        }
         return subscription
     }
     
     // MARK: - Record Conversion
     
-    private func recordFromList(_ list: RankleList) throws -> CKRecord {
-        let recordID = CKRecord.ID(recordName: list.id.uuidString, zoneID: .default)
-        let record = CKRecord(recordType: listRecordType, recordID: recordID)
-        
+    /// Write all list fields onto an existing CKRecord (used for both create and update).
+    private func populateListRecord(_ record: CKRecord, from list: RankleList) throws {
+        // `listId` mirrors the record name so it can be used in subscription predicates
+        record["listId"] = list.id.uuidString
         record["name"] = list.name
         record["items"] = try encodeItems(list.items)
         record["colorRGBA"] = try encodeColor(list.colorRGBA)
         record["isCollaborative"] = list.isCollaborative ? 1 : 0
         record["ownerId"] = list.ownerId.uuidString
         record["collaborators"] = try encodeCollaborators(list.collaborators)
-        
-        return record
     }
     
     private func listFromRecord(_ record: CKRecord) throws -> RankleList {
@@ -192,7 +217,7 @@ final class CloudKitService {
         
         let items = try decodeItems(itemsData)
         let colorRGBA = try decodeColor(colorData)
-        var list = RankleList(id: record.recordID.recordName.isEmpty ? UUID() : UUID(uuidString: record.recordID.recordName) ?? UUID(),
+        var list = RankleList(id: UUID(uuidString: record.recordID.recordName) ?? UUID(),
                              name: name,
                              items: items,
                              color: colorRGBA.color,
@@ -204,19 +229,6 @@ final class CloudKitService {
         }
         
         return list
-    }
-    
-    private func recordFromContribution(_ ranking: CollaboratorRanking, listId: UUID) throws -> CKRecord {
-        let recordID = CKRecord.ID(recordName: ranking.id.uuidString, zoneID: .default)
-        let record = CKRecord(recordType: contributionRecordType, recordID: recordID)
-        
-        record["userId"] = ranking.userId.uuidString
-        record["displayName"] = ranking.displayName
-        record["ranking"] = ranking.ranking.map { $0.uuidString }.joined(separator: ",")
-        record["updatedAt"] = ranking.updatedAt
-        record["listId"] = listId.uuidString
-        
-        return record
     }
     
     private func contributionFromRecord(_ record: CKRecord) throws -> CollaboratorRanking {
@@ -231,7 +243,6 @@ final class CloudKitService {
         let displayName = record["displayName"] as? String
         
         return CollaboratorRanking(
-            id: record.recordID.recordName.isEmpty ? UUID() : UUID(uuidString: record.recordID.recordName) ?? UUID(),
             userId: userId,
             displayName: displayName,
             ranking: ranking,
@@ -242,7 +253,6 @@ final class CloudKitService {
     // MARK: - Encoding/Decoding Helpers
     
     private func encodeItems(_ items: [RankleItem]) throws -> String {
-        // For collaborative lists, exclude media from items
         let itemsToEncode = items.map { item in
             RankleItem(id: item.id, title: item.title, media: [])
         }
@@ -287,4 +297,3 @@ enum CloudKitError: Error {
     case invalidData
     case accountNotAvailable
 }
-

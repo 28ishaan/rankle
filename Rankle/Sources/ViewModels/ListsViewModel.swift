@@ -20,6 +20,13 @@ final class ListsViewModel: ObservableObject {
         Task {
             await syncWithCloudKit()
         }
+
+        // Re-subscribe to CloudKit changes for all known collaborative lists.
+        // Subscriptions can be lost after a reinstall or expire; re-registering is idempotent
+        // (CloudKit silently ignores duplicate subscription IDs).
+        Task {
+            await resubscribeToCollaborativeLists()
+        }
         
         // Set up notification observers
         NotificationCenter.default.addObserver(
@@ -42,12 +49,10 @@ final class ListsViewModel: ObservableObject {
         lists.append(newList)
         persist()
         
-        // Save to CloudKit if collaborative
         if isCollaborative {
             Task {
                 do {
                     try await cloudKit.saveList(newList)
-                    // Subscribe to changes
                     _ = try await cloudKit.subscribeToListChanges(listId: newList.id)
                     _ = try await cloudKit.subscribeToContributionChanges(listId: newList.id)
                 } catch {
@@ -60,7 +65,6 @@ final class ListsViewModel: ObservableObject {
     }
     
     func createListWithItems(name: String, items: [RankleItem], color: Color = .cyan, isCollaborative: Bool = false) {
-        // Remove media from items if creating a collaborative list (CloudKit doesn't support media)
         let processedItems = isCollaborative ? items.map { item in
             var updatedItem = item
             updatedItem.media.removeAll()
@@ -73,12 +77,10 @@ final class ListsViewModel: ObservableObject {
         lists.append(newList)
         persist()
         
-        // Save to CloudKit if collaborative
         if isCollaborative {
             Task {
                 do {
                     try await cloudKit.saveList(newList)
-                    // Subscribe to changes
                     _ = try await cloudKit.subscribeToListChanges(listId: newList.id)
                     _ = try await cloudKit.subscribeToContributionChanges(listId: newList.id)
                 } catch {
@@ -113,30 +115,26 @@ final class ListsViewModel: ObservableObject {
     }
 
     func deleteList(at offsets: IndexSet) {
-        // Only allow deleting collaborative lists if current user is owner
         var allowed = IndexSet()
-        var skippedCount = 0
         for idx in offsets {
-            // Bounds check to prevent crashes
             guard idx < lists.count else { continue }
-            
             let list = lists[idx]
-            if list.isCollaborative {
-                if list.ownerId == UserService.shared.currentUserId {
-                    allowed.insert(idx)
-                } else {
-                    // skip non-owner deletes - collaborative lists can only be deleted by owner
-                    skippedCount += 1
-                }
-            } else {
+            if canDeleteList(list) {
                 allowed.insert(idx)
             }
         }
         if !allowed.isEmpty {
+            // Delete from CloudKit for owned collaborative lists
+            let toDelete = allowed.map { lists[$0] }.filter { $0.isCollaborative }
             lists.remove(atOffsets: allowed)
             persist()
+            
+            for list in toDelete {
+                Task {
+                    try? await cloudKit.deleteList(id: list.id)
+                }
+            }
         }
-        // Note: skippedCount could be used to show an alert, but SwiftUI .onDelete doesn't easily support this
     }
     
     // Check if a list can be deleted by current user
@@ -146,38 +144,87 @@ final class ListsViewModel: ObservableObject {
         }
         return true
     }
+    
+    /// Remove a shared collaborative list from local storage without deleting
+    /// the CloudKit record — used by collaborators who want to stop following a list.
+    func leaveList(id: UUID) {
+        lists.removeAll { $0.id == id }
+        persist()
+    }
+    
+    // Check if the current user can edit the structure of a list
+    // (add/remove items, rename, change color, reorder)
+    func canEditList(_ list: RankleList) -> Bool {
+        if list.isCollaborative {
+            return list.ownerId == UserService.shared.currentUserId
+        }
+        return true
+    }
 
     func renameList(_ listId: UUID, newName: String) {
         guard let index = lists.firstIndex(where: { $0.id == listId }) else { return }
+        guard canEditList(lists[index]) else { return }
         lists[index].name = newName
         persist()
+        syncListToCloudKitIfCollaborative(lists[index])
     }
 
     func updateColor(_ color: Color, for listId: UUID) {
         guard let index = lists.firstIndex(where: { $0.id == listId }) else { return }
+        guard canEditList(lists[index]) else { return }
         lists[index].color = color
         persist()
+        syncListToCloudKitIfCollaborative(lists[index])
     }
 
     func addItem(_ title: String, to listId: UUID) {
         guard let index = lists.firstIndex(where: { $0.id == listId }) else { return }
+        guard canEditList(lists[index]) else { return }
         lists[index].items.append(RankleItem(title: title))
         persist()
+        syncListToCloudKitIfCollaborative(lists[index])
     }
 
     func replaceList(_ updated: RankleList) {
         guard let index = lists.firstIndex(where: { $0.id == updated.id }) else { return }
         lists[index] = updated
         persist()
+        syncListToCloudKitIfCollaborative(updated)
     }
     
+    /// Import a list received via a share link.
+    /// For collaborative lists: preserves the original ID and owner so contributions
+    /// route correctly back to the owner's list. The importer becomes a collaborator.
+    /// For non-collaborative lists: creates a local copy with a new ID (importer owns it).
     func importList(_ list: RankleList) {
-        // Generate new ID to avoid conflicts
-        var imported = RankleList(name: list.name, items: list.items, color: list.color, isCollaborative: list.isCollaborative)
-        // Imported lists are owned by the importer
-        imported.ownerId = UserService.shared.currentUserId
-        lists.append(imported)
-        persist()
+        if list.isCollaborative {
+            // Avoid importing a duplicate
+            if lists.contains(where: { $0.id == list.id }) { return }
+            
+            // Preserve original ID and ownerId — the current user is a collaborator, not the owner
+            lists.append(list)
+            persist()
+            
+            // Subscribe to changes so we receive push notifications when the list or
+            // its contributions are updated
+            Task {
+                do {
+                    _ = try await cloudKit.subscribeToListChanges(listId: list.id)
+                    _ = try await cloudKit.subscribeToContributionChanges(listId: list.id)
+                } catch {
+                    #if DEBUG
+                    print("CloudKit subscription error on import: \(error)")
+                    #endif
+                }
+            }
+        } else {
+            // Non-collaborative: give a fresh ID so there are no conflicts and the
+            // importer owns their local copy
+            var imported = RankleList(name: list.name, items: list.items, color: list.color, isCollaborative: false)
+            imported.ownerId = UserService.shared.currentUserId
+            lists.append(imported)
+            persist()
+        }
     }
 
     // Apply collaborator contribution (or replace existing if same user)
@@ -199,7 +246,7 @@ final class ListsViewModel: ObservableObject {
         lists[index] = list
         persist()
         
-        // Save to CloudKit
+        // Save to CloudKit public database so all collaborators can read it
         Task {
             do {
                 try await cloudKit.saveContribution(ranking, for: listId)
@@ -235,19 +282,23 @@ final class ListsViewModel: ObservableObject {
         }
         lists[index] = list
         persist()
-        
-        // Update CloudKit
-        if enabled {
-            Task {
-                do {
+
+        Task {
+            do {
+                if enabled {
+                    // Save new collaborative record and register for real-time updates.
                     try await cloudKit.saveList(list)
                     _ = try await cloudKit.subscribeToListChanges(listId: list.id)
                     _ = try await cloudKit.subscribeToContributionChanges(listId: list.id)
-                } catch {
-                    #if DEBUG
-                    print("CloudKit save error: \(error)")
-                    #endif
+                } else {
+                    // Push the non-collaborative version so remote devices stop treating
+                    // this list as collaborative (they see isCollaborative = false on next sync).
+                    try await cloudKit.saveList(list)
                 }
+            } catch {
+                #if DEBUG
+                print("CloudKit save error: \(error)")
+                #endif
             }
         }
     }
@@ -255,16 +306,14 @@ final class ListsViewModel: ObservableObject {
     // Refresh lists from storage (useful for syncing collaborative lists)
     func refresh() {
         lists = storage.loadLists()
-        // Also sync with CloudKit
         Task {
             await syncWithCloudKit()
         }
     }
     
-    // Sync with CloudKit
+    // Sync with CloudKit public database
     @MainActor
     func syncWithCloudKit() async {
-        // Check account status
         do {
             let status = try await cloudKit.checkAccountStatus()
             guard status == .available else {
@@ -280,41 +329,47 @@ final class ListsViewModel: ObservableObject {
             return
         }
         
-        // Fetch all collaborative lists from CloudKit
+        let currentUserId = UserService.shared.currentUserId
+        
         do {
-            let cloudLists = try await cloudKit.fetchAllLists()
+            // 1. Fetch lists this user owns from the public database
+            let ownedCloudLists = try await cloudKit.fetchOwnedLists(ownerId: currentUserId)
             
-            // Merge with local lists
-            var mergedLists = lists
-            for cloudList in cloudLists {
-                if let index = mergedLists.firstIndex(where: { $0.id == cloudList.id }) {
-                    // Update existing list if CloudKit version is newer or if it's collaborative
-                    if cloudList.isCollaborative {
-                        mergedLists[index] = cloudList
-                    }
-                } else {
-                    // Add new list from CloudKit
-                    if cloudList.isCollaborative {
-                        mergedLists.append(cloudList)
-                    }
+            // 2. For locally-stored collaborative lists the current user does NOT own
+            //    (i.e., lists shared with them), fetch the latest version by ID so they
+            //    see structural updates the owner may have made.
+            let sharedLocalLists = lists.filter {
+                $0.isCollaborative && $0.ownerId != currentUserId
+            }
+            var sharedCloudLists: [RankleList] = []
+            for localList in sharedLocalLists {
+                if let cloudList = try? await cloudKit.fetchListById(id: localList.id) {
+                    sharedCloudLists.append(cloudList)
                 }
             }
             
-            // Save merged lists locally
-            storage.saveLists(mergedLists)
-            lists = mergedLists
+            let allCloudLists = ownedCloudLists + sharedCloudLists
             
-            // Fetch and update contributions for all collaborative lists
+            // 3. Merge cloud versions into local list array
+            var mergedLists = lists
+            for cloudList in allCloudLists {
+                if let idx = mergedLists.firstIndex(where: { $0.id == cloudList.id }) {
+                    mergedLists[idx] = cloudList
+                } else {
+                    mergedLists.append(cloudList)
+                }
+            }
+            
+            // 4. Fetch and apply contributions for every collaborative list
             for list in mergedLists where list.isCollaborative {
                 do {
                     let contributions = try await cloudKit.fetchContributions(for: list.id)
                     var updatedList = list
                     updatedList.collaborators = contributions
-                    let aggregated = storage.aggregateRanking(for: updatedList)
-                    updatedList.items = aggregated
+                    updatedList.items = storage.aggregateRanking(for: updatedList)
                     
-                    if let index = lists.firstIndex(where: { $0.id == updatedList.id }) {
-                        lists[index] = updatedList
+                    if let idx = mergedLists.firstIndex(where: { $0.id == updatedList.id }) {
+                        mergedLists[idx] = updatedList
                     }
                 } catch {
                     #if DEBUG
@@ -323,12 +378,13 @@ final class ListsViewModel: ObservableObject {
                 }
             }
             
-            storage.saveLists(lists)
+            storage.saveLists(mergedLists)
+            lists = mergedLists
+            
         } catch {
             #if DEBUG
             print("CloudKit sync error: \(error)")
             #endif
-            // Fall back to local storage
             lists = storage.loadLists()
         }
     }
@@ -343,7 +399,39 @@ final class ListsViewModel: ObservableObject {
         return storage.aggregateRanking(for: list)
     }
 
+    // Re-register CloudKit subscriptions for all collaborative lists the app already knows about.
+    // Called on launch so subscriptions survive reinstalls or other loss events.
+    // CloudKit silently ignores duplicate subscription IDs so this is safe to call repeatedly.
+    @MainActor
+    private func resubscribeToCollaborativeLists() async {
+        for list in lists where list.isCollaborative {
+            do {
+                _ = try await cloudKit.subscribeToListChanges(listId: list.id)
+                _ = try await cloudKit.subscribeToContributionChanges(listId: list.id)
+            } catch {
+                #if DEBUG
+                print("Re-subscription error for list \(list.id): \(error)")
+                #endif
+            }
+        }
+    }
+
     private func persist() {
         storage.saveLists(lists)
+    }
+
+    // Push a collaborative list to CloudKit when the owner mutates it
+    private func syncListToCloudKitIfCollaborative(_ list: RankleList) {
+        guard list.isCollaborative,
+              list.ownerId == UserService.shared.currentUserId else { return }
+        Task {
+            do {
+                try await cloudKit.saveList(list)
+            } catch {
+                #if DEBUG
+                print("CloudKit list sync error: \(error)")
+                #endif
+            }
+        }
     }
 }

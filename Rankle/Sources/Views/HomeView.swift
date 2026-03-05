@@ -55,8 +55,12 @@ struct HomeView: View {
                                     }
                                     if list.isCollaborative {
                                         HStack(spacing: 4) {
-                                            Image(systemName: "person.2.fill")
-                                            Text("Collaborative")
+                                            Image(systemName: list.ownerId == UserService.shared.currentUserId
+                                                  ? "person.2.fill"
+                                                  : "person.fill.checkmark")
+                                            Text(list.ownerId == UserService.shared.currentUserId
+                                                 ? "Collaborative"
+                                                 : "Shared")
                                                 .font(.caption)
                                         }
                                         .foregroundColor(.secondary)
@@ -69,10 +73,25 @@ struct HomeView: View {
                                 .padding(.vertical, 6)
                             }
                             .listRowBackground(Color.clear)
-                        }
-                        .onDelete { offsets in
-                            // Only allow deletion if user is owner for collaborative lists
-                            viewModel.deleteList(at: offsets)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                if viewModel.canDeleteList(list) {
+                                    Button(role: .destructive) {
+                                        if let idx = viewModel.lists.firstIndex(where: { $0.id == list.id }) {
+                                            viewModel.deleteList(at: IndexSet(integer: idx))
+                                        }
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                } else {
+                                    // Non-owner of a collaborative list can leave (removes it locally only)
+                                    Button(role: .destructive) {
+                                        viewModel.leaveList(id: list.id)
+                                    } label: {
+                                        Label("Leave", systemImage: "rectangle.portrait.and.arrow.right")
+                                    }
+                                    .tint(.orange)
+                                }
+                            }
                         }
                     }
                     .scrollContentBackground(.hidden)
